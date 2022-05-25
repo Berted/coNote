@@ -2,7 +2,7 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { Input } from '@chakra-ui/react';
-import Editor from './editor/Editor';
+import Editor from './components/editor/Editor';
 
 function App() {
   return (
