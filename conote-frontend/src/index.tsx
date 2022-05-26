@@ -5,9 +5,9 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { ChakraProvider } from "@chakra-ui/react";
 import { ProvideAuth } from "./hooks/useAuth";
-import Theme from './config/themeConfig';
-import '@fontsource/dm-sans/400.css';
-import '@fontsource/league-spartan/700.css';
+import Theme from "./config/themeConfig";
+import "@fontsource/dm-sans/400.css"; // Subtitle font.
+import "@fontsource/league-spartan/700.css"; // Title font.
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
