@@ -16,7 +16,12 @@ export default function Home() {
       <Center>
         <VStack spacing="3em">
           <VStack spacing="-5px" marginTop="35vh">
-            <Heading size="4xl" fontSize="72pt" fontFamily="League Spartan">
+            <Heading
+              size="4xl"
+              fontSize="72pt"
+              fontFamily="League Spartan"
+              textShadow="0px 1px 3px #00000033"
+            >
               <chakra.span color="blue.700">co</chakra.span>
               <chakra.span color="blue.400">Note</chakra.span>
             </Heading>
