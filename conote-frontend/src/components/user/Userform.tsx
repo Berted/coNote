@@ -9,6 +9,27 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 
+function PasswordInput(props: any) {
+  const [show, setShow] = useState(false);
+  const handleClick = () => setShow(!show);
+
+  return (
+    <InputGroup size="md">
+      <Input
+        onChange={(e) => props.onChange(e)}
+        pr="4.5rem"
+        type={show ? "text" : "password"}
+        placeholder={show ? "Your (visible) password" : "Your password"}
+      />
+      <InputRightElement width="4.5rem">
+        <Button h="1.75rem" size="sm" onClick={handleClick}>
+          {show ? "Hide" : "Show"}
+        </Button>
+      </InputRightElement>
+    </InputGroup>
+  );
+}
+
 export default function Userform(props: any) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,19 +55,7 @@ export default function Userform(props: any) {
       </FormControl>
       <FormControl id="password">
         <FormLabel htmlFor="email">Password</FormLabel>
-        <InputGroup size="md">
-          <Input
-            onChange={(e) => setPassword(e.target.value)}
-            pr="4.5rem"
-            type={show ? "text" : "password"}
-            placeholder={show ? "Your (visible) password" : "Your password"}
-          />
-          <InputRightElement width="4.5rem">
-            <Button h="1.75rem" size="sm" onClick={() => setShow(!show)}>
-              {show ? "Hide" : "Show"}
-            </Button>
-          </InputRightElement>
-        </InputGroup>
+        <PasswordInput onChange={(e: any) => setPassword(e.target.value)} />
       </FormControl>
       <Button
         onClick={() => props.onButtonClick(email, password)}
