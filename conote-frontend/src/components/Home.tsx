@@ -9,7 +9,7 @@ import {
   Link,
   chakra,
 } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouteLink } from "react-router-dom";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -65,6 +65,17 @@ export default function Home() {
             }}
           >
             What is coNote?
+          </Link>
+          <Link
+            color="gray.400"
+            _hover={{
+              textColor: "gray.600",
+              textDecoration: "underline",
+            }}
+            as={RouteLink}
+            to="/editor"
+          >
+            Demo the editor.
           </Link>
         </VStack>
       </Center>
