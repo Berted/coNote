@@ -18,9 +18,9 @@ export default function Dashboard() {
             Sadly, we have not implemented an interface for file management and
             storage. However, you can try out a basic version of{" "}
             <Link
+              textDecor="underline"
               _hover={{
                 textColor: "blue.500",
-                textDecoration: "underline",
               }}
               as={RouteLink}
               to="/editor"
