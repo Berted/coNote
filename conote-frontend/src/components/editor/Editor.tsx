@@ -44,10 +44,12 @@ function MarkdownPreview() {
 
 const sampleText = `# 📝 Welcome to coNote! 
 **WARNING:** This is a very early prototype of the editor, 
-there are many kinks to work out, currently looks best at 
-a desktop sized resolution. It should be noted that any edits 
+there are many kinks to work out. It should be noted that any edits 
 to this file is currently not saved. **DO NOT WRITE ANYTHING 
 IMPORTANT HERE!**
+
+**Note:** This app currently looks best at desktop resolution and
+keyboard shortcuts currently do not work.
 
 coNote is designed to be a simple collaborative tool 
 to allow your group to start writing and collaborate 
