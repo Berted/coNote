@@ -33,7 +33,7 @@ export const useAuth = () => {
   return useContext(authContext);
 };
 // Provider hook that creates auth object and handles state
-function useProvideAuth() {
+export function useProvideAuth() {
   const [user, setUser] = useState<any>(null);
   // Wrap any Firebase methods we want to use making sure ...
   // ... to save the user to state.
