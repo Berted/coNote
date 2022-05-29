@@ -34,6 +34,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="login" element={<Login />} />
             <Route path="signup" element={<Signup />} />
+            <Route path="editor" element={<Editor />} />
           </Route>
           <Route path="dashboard" element={
             <RedirectRoute
