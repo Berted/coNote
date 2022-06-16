@@ -1,5 +1,5 @@
 export default interface docType {
-  content: string;
+  content: any;
   public: boolean;
   roles: any;
   timestamp: number;

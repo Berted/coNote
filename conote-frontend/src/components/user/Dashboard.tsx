@@ -25,17 +25,34 @@ import {
   FormControl,
   FormLabel,
   Input,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link as RouteLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useProvideAuth } from "hooks/useAuth";
 import NavbarContainer from "components/NavbarContainer";
 import Logo from "components/Logo";
 import { IoCreateSharp } from "react-icons/io5";
-import { getDatabase, get, ref, push, set } from "firebase/database";
+import { getDatabase, get, ref, push, set, child } from "firebase/database";
 import userType from "components/interfaces/userType";
+
+async function getUserData(auth: any, setUserData: any) {
+  get(ref(getDatabase(), `users/${auth.user.uid}`))
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        setUserData(snapshot.val());
+      } else {
+        setUserData({
+          fullname: auth.user.email,
+          img_url: "",
+          owned_documents: [],
+        });
+      }
+    })
+    .catch((e) => console.log("ERROR: " + e));
+}
 
 function UserButton({ auth, userData, ...props }: any) {
   const navigate = useNavigate();
@@ -54,7 +71,7 @@ function UserButton({ auth, userData, ...props }: any) {
       <PopoverContent boxShadow="sm">
         <PopoverArrow />
         <PopoverHeader>
-          Hi, <b>{userData.fullname}</b>!
+          Hi, <b>{userData === undefined ? "" : userData.fullname}</b>!
         </PopoverHeader>
         <PopoverBody>
           <Button
@@ -76,7 +93,7 @@ function UserButton({ auth, userData, ...props }: any) {
   );
 }
 
-function NewDocButton({ auth, ...props }: any) {
+function NewDocButton({ auth, setUserData, ...props }: any) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [title, setTitle] = useState("");
 
@@ -97,9 +114,14 @@ function NewDocButton({ auth, ...props }: any) {
         `users/${auth.user.uid}/owned_documents/${newDocRef.key}`
       ),
       true
-    ).catch((e) => {
-      console.log("Set Error: " + e);
-    });
+    )
+      .then(() => {
+        setTitle("");
+        getUserData(auth, setUserData);
+      })
+      .catch((e) => {
+        console.log("Set Error: " + e); // TODO: Alert notification?
+      });
 
     onClose();
   };
@@ -136,64 +158,111 @@ function NewDocButton({ auth, ...props }: any) {
   );
 }
 
-class Navbar extends React.Component<{ auth: any }, { userData: userType }> {
-  constructor(props: any) {
-    super(props);
-    this.state = {
-      userData: {
-        fullname: "",
-        img_url: "",
-        owned_documents: {},
-      },
-    };
-  }
-
-  componentDidMount() {
-    get(ref(getDatabase(), `users/${this.props.auth.user.uid}`))
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          this.setState({
-            userData: snapshot.val(),
-          });
-        } else {
-          this.setState({
-            userData: {
-              fullname: this.props.auth.user.email,
-              img_url: "",
-              owned_documents: [],
-            },
-          });
-        }
-        console.log("Get Ran");
-      })
-      .catch((e) => console.log("ERROR: " + e));
-  }
-
-  render() {
-    return (
-      <NavbarContainer>
-        <Logo
-          fontSize="24pt"
-          marginBottom="-0.4em"
-          _hover={{
-            textShadow: "1px 1px 3px #00000033",
-          }}
-          as={RouteLink}
-          to="/"
-        />
-        <HStack spacing="4">
-          <NewDocButton auth={this.props.auth} />
-          <Flex align="center">
-            <UserButton auth={this.props.auth} userData={this.state.userData} />
-          </Flex>
-        </HStack>
-      </NavbarContainer>
-    );
-  }
+function Navbar({ auth, userData, setUserData, ...props }: any) {
+  return (
+    <NavbarContainer>
+      <Logo
+        fontSize="24pt"
+        marginBottom="-0.4em"
+        _hover={{
+          textShadow: "1px 1px 3px #00000033",
+        }}
+        as={RouteLink}
+        to="/"
+      />
+      <HStack spacing="4">
+        <NewDocButton auth={auth} setUserData={setUserData} />
+        <Flex align="center">
+          <UserButton auth={auth} userData={userData} />
+        </Flex>
+      </HStack>
+    </NavbarContainer>
+  );
 }
 
-function DocCard() {}
+function DocCard({ docID, ...props }: any) {
+  const [title, setTitle] = useState<string | undefined>(undefined);
+  const [timestamp, setTimestamp] = useState<number | undefined>(undefined);
 
+  // TOTHINK: Data is not updated in realtime. Perhaps should be reconsidered?
+  useEffect(() => {
+    console.log("Queries: " + docID);
+    const docRef = ref(getDatabase(), `docs/${docID}`);
+    get(child(docRef, `title`))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          setTitle(snapshot.val());
+        }
+      })
+      .catch((e) => console.log("Title Error: " + e)); // TODO: Alert notification?
+
+    get(child(docRef, `timestamp`))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          setTimestamp(snapshot.val());
+        }
+      })
+      .catch((e) => console.log("Timestamp Error: " + e)); // TODO: Alert notification?
+  }, [docID]);
+
+  return (
+    <Box
+      flexGrow="1"
+      minH="120px"
+      borderWidth="1px"
+      borderRadius="lg"
+      overflow="hidden"
+      px="5px"
+      paddingY="2"
+      paddingX="5"
+      textAlign="left"
+      verticalAlign="top"
+    >
+      <Box
+        mt="1"
+        fontWeight="semibold"
+        fontSize="lg"
+        as="h4"
+        lineHeight="tight"
+        noOfLines={1}
+      >
+        {title}
+      </Box>
+    </Box>
+  );
+}
+
+export default function Dashboard() {
+  const auth = useProvideAuth();
+
+  const [userData, setUserData] = useState<userType | undefined>(undefined);
+
+  useEffect(() => {
+    if (auth.user) {
+      getUserData(auth, setUserData);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.user]);
+
+  return (
+    auth.user && (
+      <Box minH="100vh">
+        <Navbar auth={auth} userData={userData} setUserData={setUserData} />
+
+        <SimpleGrid minChildWidth="240px" paddingX="7" marginTop="2" gap="5">
+          {userData !== undefined &&
+            Object.keys(userData.owned_documents).map((item) => {
+              return <DocCard docID={item} />;
+            })}
+        </SimpleGrid>
+      </Box>
+    )
+  );
+}
+
+/*
+  Deprecated.
+*/
 function PlaceholderText({ auth, ...props }: any) {
   return (
     <VStack spacing="6">
@@ -215,20 +284,5 @@ function PlaceholderText({ auth, ...props }: any) {
         </Link>
       </Text>
     </VStack>
-  );
-}
-
-export default function Dashboard() {
-  const authentication = useProvideAuth();
-
-  return (
-    authentication.user && (
-      <Box minH="100vh">
-        <Navbar auth={authentication} />
-        <Flex align={"center"} justify={"center"}>
-          <PlaceholderText auth={authentication} />
-        </Flex>
-      </Box>
-    )
   );
 }
