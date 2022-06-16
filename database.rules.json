@@ -1,0 +1,28 @@
+
+{
+  "rules": {
+    // ".read": "now < 1656003600000",  // 2022-6-24
+    // ".write": "now < 1656003600000",  // 2022-6-24
+    "users": {
+      "$uid": {
+        ".read": "auth !== null && $uid === auth.uid",
+        ".write": "auth !== null && $uid === auth.uid",
+      }
+    },
+    /*
+     * Currently there exists only three roles: Owner, Editor, and Viewer.
+     */
+    "docs": {
+      "$id": {
+        ".read": "data.child('public').val() === true || (auth !== null && data.child('roles').hasChild(auth.uid))",
+        ".write": "auth !== null && (!data.exists() || data.child('roles').child(auth.uid).val() === 'owner')",
+        "content": {
+          ".write": "auth !== null && data.child('roles').child(auth.uid).val() === 'editor'" 
+        },
+        "title": {
+          ".write": "auth !== null && data.child('roles').child(auth.uid).val() === 'editor'" 
+        }
+      }
+    }
+  }
+}

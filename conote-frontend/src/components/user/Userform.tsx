@@ -33,7 +33,6 @@ function PasswordInput(props: any) {
 export default function Userform(props: any) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [show, setShow] = useState(false);
 
   return (
     <VStack
