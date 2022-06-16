@@ -1,13 +1,11 @@
 import {
   Center,
-  Heading,
   VStack,
   Text,
   HStack,
   Button,
   Container,
   Link,
-  chakra,
 } from "@chakra-ui/react";
 import { useNavigate, Link as RouteLink } from "react-router-dom";
 import Logo from "./Logo";
