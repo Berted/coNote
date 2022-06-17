@@ -34,7 +34,7 @@ import { useNavigate } from "react-router-dom";
 import { useProvideAuth } from "hooks/useAuth";
 import NavbarContainer from "components/NavbarContainer";
 import Logo from "components/Logo";
-import { IoCreateSharp } from "react-icons/io5";
+import { IoCreateSharp, IoTime } from "react-icons/io5";
 import { getDatabase, get, ref, push, set, child } from "firebase/database";
 import userType from "components/interfaces/userType";
 
@@ -180,13 +180,57 @@ function Navbar({ auth, userData, setUserData, ...props }: any) {
   );
 }
 
+function parseTime(timeStamp: number | undefined): string {
+  const curTime: number = Math.floor(Date.now() / 1000);
+  const isLeap = (year: number) => new Date(year, 1, 29).getDate() === 29;
+
+  if (timeStamp === undefined) return "";
+  if (timeStamp > curTime) {
+    // TODO: Alert notification?
+    console.log("Misidentified time");
+    return "ERROR";
+  }
+
+  console.log("Time: " + timeStamp + " " + curTime);
+
+  const pastDate: Date = new Date(timeStamp * 1000);
+  const curDate: Date = new Date(curTime * 1000);
+
+  if (curTime - timeStamp >= (365 + +isLeap(curDate.getFullYear())) * 86400) {
+    if (curDate.getFullYear() - pastDate.getFullYear() === 1) return "a year";
+    else return curDate.getFullYear() - pastDate.getFullYear() + " years";
+  } else if (curDate.getMonth() !== pastDate.getMonth()) {
+    let diff = curDate.getMonth() - pastDate.getMonth();
+    if (diff < 0) diff += 12;
+
+    if (diff === 1) return "a month";
+    else return diff + " months";
+  } else if (curTime - timeStamp >= 86400) {
+    let diff = Math.floor((curTime - timeStamp) / 86400);
+    if (diff === 1) return "a day";
+    else return diff + " days";
+  } else if (curTime - timeStamp >= 3600) {
+    let diff = Math.floor((curTime - timeStamp) / 3600);
+    if (diff === 1) return "an hour";
+    else return diff + " hours";
+  } else if (curTime - timeStamp >= 60) {
+    let diff = Math.floor((curTime - timeStamp) / 60);
+    if (diff === 1) return "a minute";
+    else return diff + " minutes";
+  } else if (curTime - timeStamp > 0) {
+    if (curTime - timeStamp === 1) return "a second";
+    else return curTime - timeStamp + " seconds";
+  } else {
+    return "less than a second";
+  }
+}
+
 function DocCard({ docID, ...props }: any) {
   const [title, setTitle] = useState<string | undefined>(undefined);
   const [timestamp, setTimestamp] = useState<number | undefined>(undefined);
 
   // TOTHINK: Data is not updated in realtime. Perhaps should be reconsidered?
   useEffect(() => {
-    console.log("Queries: " + docID);
     const docRef = ref(getDatabase(), `docs/${docID}`);
     get(child(docRef, `title`))
       .then((snapshot) => {
@@ -228,6 +272,10 @@ function DocCard({ docID, ...props }: any) {
       >
         {title}
       </Box>
+      <HStack mt="2px" textColor="gray.300" fontSize="xs">
+        <IoTime />
+        <Text>Modified {parseTime(timestamp)} ago</Text>
+      </HStack>
     </Box>
   );
 }
