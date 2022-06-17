@@ -25,7 +25,15 @@ import {
   FormControl,
   FormLabel,
   Input,
+  IconButton,
   SimpleGrid,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  AlertDialogCloseButton,
 } from "@chakra-ui/react";
 import React from "react";
 import { useState, useEffect } from "react";
@@ -34,20 +42,32 @@ import { useNavigate } from "react-router-dom";
 import { useProvideAuth } from "hooks/useAuth";
 import NavbarContainer from "components/NavbarContainer";
 import Logo from "components/Logo";
-import { IoCreateSharp, IoTime } from "react-icons/io5";
-import { getDatabase, get, ref, push, set, child } from "firebase/database";
+import { IoCreateSharp, IoTime, IoTrashSharp } from "react-icons/io5";
+import {
+  getDatabase,
+  get,
+  ref,
+  push,
+  set,
+  child,
+  remove,
+} from "firebase/database";
 import userType from "components/interfaces/userType";
 
 async function getUserData(auth: any, setUserData: any) {
   get(ref(getDatabase(), `users/${auth.user.uid}`))
     .then((snapshot) => {
       if (snapshot.exists()) {
-        setUserData(snapshot.val());
+        let snapvar = snapshot.val();
+        if (snapvar.owned_documents === undefined) {
+          snapvar.owned_documents = {};
+        }
+        setUserData(snapvar);
       } else {
         setUserData({
           fullname: auth.user.email,
           img_url: "",
-          owned_documents: [],
+          owned_documents: {},
         });
       }
     })
@@ -116,13 +136,12 @@ function NewDocButton({ auth, setUserData, ...props }: any) {
       true
     )
       .then(() => {
-        setTitle("");
         getUserData(auth, setUserData);
       })
       .catch((e) => {
         console.log("Set Error: " + e); // TODO: Alert notification?
       });
-
+    setTitle("");
     onClose();
   };
 
@@ -154,6 +173,62 @@ function NewDocButton({ auth, setUserData, ...props }: any) {
           </ModalFooter>
         </ModalContent>
       </Modal>
+    </>
+  );
+}
+
+function DeleteDocButton({ docID, title, auth, setUserData, ...props }: any) {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = React.useRef(null);
+
+  const onDelete = (e: any) => {
+    remove(ref(getDatabase(), `docs/${docID}`));
+    remove(
+      ref(getDatabase(), `users/${auth.user.uid}/owned_documents/${docID}`)
+    )
+      .then(() => {
+        getUserData(auth, setUserData);
+      })
+      .catch((e) => {
+        console.log(docID + " delete error: " + e); //TODO: Alert Notification?
+      });
+    onClose();
+  };
+
+  return (
+    <>
+      <IconButton
+        textColor="blue.500"
+        icon={<IoTrashSharp />}
+        aria-label={"Delete note '" + title + "'"}
+        size="md"
+        variant="ghost"
+        onClick={onOpen}
+      />
+
+      <AlertDialog
+        leastDestructiveRef={cancelRef}
+        isOpen={isOpen}
+        onClose={onClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader>Delete Note</AlertDialogHeader>
+            <AlertDialogCloseButton />
+            <AlertDialogBody>
+              Are you sure you want to delete <i>'{title}'</i>?
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onClose} mr="3">
+                Cancel
+              </Button>
+              <Button colorScheme="red" onClick={onDelete}>
+                Delete
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </>
   );
 }
@@ -191,8 +266,6 @@ function parseTime(timeStamp: number | undefined): string {
     return "ERROR";
   }
 
-  console.log("Time: " + timeStamp + " " + curTime);
-
   const pastDate: Date = new Date(timeStamp * 1000);
   const curDate: Date = new Date(curTime * 1000);
 
@@ -225,7 +298,7 @@ function parseTime(timeStamp: number | undefined): string {
   }
 }
 
-function DocCard({ docID, ...props }: any) {
+function DocCard({ docID, setUserData, auth, ...props }: any) {
   const [title, setTitle] = useState<string | undefined>(undefined);
   const [timestamp, setTimestamp] = useState<number | undefined>(undefined);
 
@@ -276,6 +349,15 @@ function DocCard({ docID, ...props }: any) {
         <IoTime />
         <Text>Modified {parseTime(timestamp)} ago</Text>
       </HStack>
+
+      <Flex w="vw" mt="10px" mr="-5px" flexDirection="row-reverse">
+        <DeleteDocButton
+          docID={docID}
+          title={title}
+          setUserData={setUserData}
+          auth={auth}
+        />
+      </Flex>
     </Box>
   );
 }
@@ -300,7 +382,9 @@ export default function Dashboard() {
         <SimpleGrid minChildWidth="240px" paddingX="7" marginTop="2" gap="5">
           {userData !== undefined &&
             Object.keys(userData.owned_documents).map((item) => {
-              return <DocCard docID={item} />;
+              return (
+                <DocCard docID={item} setUserData={setUserData} auth={auth} />
+              );
             })}
         </SimpleGrid>
       </Box>
