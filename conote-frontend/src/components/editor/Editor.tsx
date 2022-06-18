@@ -1,13 +1,4 @@
 import {
-  Remirror,
-  useRemirror,
-  useHelpers,
-  EditorComponent,
-  ThemeProvider,
-} from "@remirror/react";
-import { languages } from "@codemirror/language-data";
-import { CodeMirrorExtension } from "@remirror/extension-codemirror6";
-import {
   HStack,
   Box,
   Divider,
@@ -16,6 +7,10 @@ import {
   Text,
   Link,
 } from "@chakra-ui/react";
+import { useRef, useEffect, useState } from "react";
+import CodeMirror, { ReactCodeMirrorRef } from "@uiw/react-codemirror";
+import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
+import { languages } from "@codemirror/language-data";
 import { Link as RouteLink } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import "./github-markdown-light.css";
@@ -26,14 +21,11 @@ import rehypeKatex from "rehype-katex";
 
 import "katex/dist/katex.min.css";
 
-const extensions = () => [new CodeMirrorExtension({ languages })];
-
-function MarkdownPreview() {
-  const { getText } = useHelpers(true);
+function MarkdownPreview({ content, ...props }: any) {
   return (
     <>
       <ReactMarkdown
-        children={getText()}
+        children={content}
         className="markdown-body"
         remarkPlugins={[remarkMath, remarkGfm]}
         rehypePlugins={[rehypeKatex]}
@@ -61,7 +53,7 @@ up](https://www.markdowntutorial.com/)!
 
 ## 👀 Simple Demo 
 
-You can _easily_ format your **text** like **__this__**!
+You can _easily_ format your **text** like **_this_**!
 
 You can also add subheadings of different levels!
 
@@ -124,12 +116,8 @@ We're planning to add:
 `;
 
 const Editor = () => {
-  const { manager, onChange, state } = useRemirror({
-    extensions,
-    content: sampleText,
-    stringHandler: "text",
-    selection: "end",
-  });
+  const editDiv = useRef<ReactCodeMirrorRef>(null);
+  const [content, setContent] = useState(sampleText);
 
   return (
     <VStack padding="1">
@@ -144,38 +132,35 @@ const Editor = () => {
       >
         &#60; Return home.
       </Link>
-      <Remirror onChange={onChange} manager={manager} initialContent={state}>
-        <HStack
-          w="100vw"
-          padding="2"
-          verticalAlign="top"
-          textAlign="left"
-          h="90vh"
-        >
-          <VStack w="50%" h="100%">
-            <Text>Editor:</Text>
-            <Box
-              w="100%"
-              borderWidth="1px"
-              borderRadius="md"
-              verticalAlign="top"
-            >
-              <EditorComponent />
-            </Box>
-          </VStack>
-          <VStack w="50%" h="100%">
-            <Text>Preview:</Text>
-            <Box
-              w="100%"
-              borderWidth="1px"
-              borderRadius="md"
-              verticalAlign="top"
-            >
-              <MarkdownPreview />
-            </Box>
-          </VStack>
-        </HStack>
-      </Remirror>
+      <HStack
+        w="100vw"
+        padding="2"
+        verticalAlign="top"
+        textAlign="left"
+        h="90vh"
+      >
+        <VStack w="50%" h="100%">
+          <Text>Editor:</Text>
+          <Box w="100%" borderWidth="1px" borderRadius="md" verticalAlign="top">
+            <CodeMirror
+              value={sampleText}
+              extensions={[
+                markdown({ base: markdownLanguage, codeLanguages: languages }),
+              ]}
+              onChange={(value, viewUpdate) => {
+                setContent(value);
+              }}
+              ref={editDiv}
+            />
+          </Box>
+        </VStack>
+        <VStack w="50%" h="100%">
+          <Text>Preview:</Text>
+          <Box w="100%" borderWidth="1px" borderRadius="md" verticalAlign="top">
+            <MarkdownPreview content={content} />
+          </Box>
+        </VStack>
+      </HStack>
     </VStack>
   );
 };
