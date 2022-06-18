@@ -69,6 +69,13 @@ async function getUserData(auth: any, setUserData: any) {
           img_url: "",
           owned_documents: {},
         });
+
+        // TOTHINK: Currently auto-populates the database with default values if user is not in database. Maybe change?
+        set(ref(getDatabase(), `users/${auth.user.uid}`), {
+          fullname: auth.user.email,
+          img_url: "",
+          owned_documents: {},
+        });
       }
     })
     .catch((e) => console.log("ERROR: " + e));
