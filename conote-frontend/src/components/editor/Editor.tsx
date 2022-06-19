@@ -1,16 +1,11 @@
-import {
-  HStack,
-  Box,
-  Divider,
-  VStack,
-  Stack,
-  Text,
-  Link,
-} from "@chakra-ui/react";
+import { HStack, Box, VStack, Text, Link } from "@chakra-ui/react";
 import { useRef, useEffect, useState } from "react";
-import CodeMirror, { ReactCodeMirrorRef } from "@uiw/react-codemirror";
+
+import { EditorView } from "@codemirror/view";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
+import { basicSetup } from "codemirror";
 import { languages } from "@codemirror/language-data";
+
 import { Link as RouteLink } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import "./github-markdown-light.css";
@@ -18,14 +13,18 @@ import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import rehypeKatex from "rehype-katex";
+import Firepad from "@lucafabbian/firepad";
+import { compatApp } from "config/firebaseConfig";
+import firebase from "firebase/compat/app";
+import "firebase/compat/database";
 
 import "katex/dist/katex.min.css";
 
-function MarkdownPreview({ content, ...props }: any) {
+function MarkdownPreview({ docContent, ...props }: any) {
   return (
     <>
       <ReactMarkdown
-        children={content}
+        children={docContent}
         className="markdown-body"
         remarkPlugins={[remarkMath, remarkGfm]}
         rehypePlugins={[rehypeKatex]}
@@ -33,6 +32,90 @@ function MarkdownPreview({ content, ...props }: any) {
     </>
   );
 }
+
+const Editor = () => {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const [view, setView] = useState<EditorView>();
+  const [docContent, setDocContent] = useState(sampleText);
+  const [available, setAvailable] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!editorRef.current) return;
+
+    const view = new EditorView({
+      extensions: [
+        basicSetup,
+        markdown({ base: markdownLanguage, codeLanguages: languages }),
+        EditorView.lineWrapping,
+        EditorView.updateListener.of((update) => {
+          if (update.changes) {
+            setDocContent(update.state.doc.toString());
+          }
+        }),
+      ],
+      parent: editorRef.current,
+    });
+
+    setView(view);
+
+    let firepad = Firepad.fromCodeMirror6(
+      firebase.database(compatApp).ref("debug_doc"),
+      view,
+      {
+        defaultText: sampleText,
+      }
+    );
+
+    firepad.on("ready", () => {
+      setAvailable(true);
+    });
+
+    return () => {
+      view.destroy();
+      setView(undefined);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editorRef.current]);
+
+  return (
+    <VStack padding="1">
+      <Link
+        color="gray.400"
+        _hover={{
+          textColor: "gray.600",
+          textDecoration: "underline",
+        }}
+        as={RouteLink}
+        to="/"
+      >
+        &#60; Return home.
+      </Link>
+      <HStack
+        w="100vw"
+        padding="2"
+        verticalAlign="top"
+        textAlign="left"
+        h="90vh"
+      >
+        <VStack w="50%" h="100%">
+          <Text>Editor:</Text>
+          <Box w="100%" borderWidth="1px" borderRadius="md" verticalAlign="top">
+            <div ref={editorRef} hidden={!available} />
+            <Text>{available ? "" : "Editor is loading..."}</Text>
+          </Box>
+        </VStack>
+        <VStack w="50%" h="100%">
+          <Text>Preview:</Text>
+          <Box w="100%" borderWidth="1px" borderRadius="md" verticalAlign="top">
+            <MarkdownPreview docContent={docContent} />
+          </Box>
+        </VStack>
+      </HStack>
+    </VStack>
+  );
+};
+
+export default Editor;
 
 const sampleText = `# 📝 Welcome to coNote! 
 **WARNING:** This is a very early prototype of the editor, 
@@ -114,55 +197,3 @@ We're planning to add:
 - Get keyboard shortcuts working.
 - Many more to come :D
 `;
-
-const Editor = () => {
-  const editDiv = useRef<ReactCodeMirrorRef>(null);
-  const [content, setContent] = useState(sampleText);
-
-  return (
-    <VStack padding="1">
-      <Link
-        color="gray.400"
-        _hover={{
-          textColor: "gray.600",
-          textDecoration: "underline",
-        }}
-        as={RouteLink}
-        to="/"
-      >
-        &#60; Return home.
-      </Link>
-      <HStack
-        w="100vw"
-        padding="2"
-        verticalAlign="top"
-        textAlign="left"
-        h="90vh"
-      >
-        <VStack w="50%" h="100%">
-          <Text>Editor:</Text>
-          <Box w="100%" borderWidth="1px" borderRadius="md" verticalAlign="top">
-            <CodeMirror
-              value={sampleText}
-              extensions={[
-                markdown({ base: markdownLanguage, codeLanguages: languages }),
-              ]}
-              onChange={(value, viewUpdate) => {
-                setContent(value);
-              }}
-              ref={editDiv}
-            />
-          </Box>
-        </VStack>
-        <VStack w="50%" h="100%">
-          <Text>Preview:</Text>
-          <Box w="100%" borderWidth="1px" borderRadius="md" verticalAlign="top">
-            <MarkdownPreview content={content} />
-          </Box>
-        </VStack>
-      </HStack>
-    </VStack>
-  );
-};
-
-export default Editor;

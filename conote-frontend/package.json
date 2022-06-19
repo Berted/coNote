@@ -10,6 +10,7 @@
     "@emotion/styled": "^11.8.1",
     "@fontsource/dm-sans": "^4.5.7",
     "@fontsource/league-spartan": "^4.5.10",
+    "@lucafabbian/firepad": "^1.5.16",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.2.0",
     "@testing-library/user-event": "^13.5.0",
@@ -21,10 +22,11 @@
     "@uiw/react-codemirror": "^4.8.1",
     "codemirror": "^6.0.0",
     "csstype": "^3.1.0",
-    "firebase": "^9.8.1",
+    "firebase": "^9.8.3",
     "framer-motion": "^6.3.3",
     "github-markdown-css": "^5.1.0",
     "react": "^18.1.0",
+    "react-app-rewired": "^2.2.1",
     "react-dom": "^18.1.0",
     "react-icons": "^4.4.0",
     "react-markdown": "^8.0.3",
@@ -39,9 +41,9 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
