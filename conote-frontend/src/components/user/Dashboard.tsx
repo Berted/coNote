@@ -51,6 +51,7 @@ import {
   set,
   child,
   remove,
+  serverTimestamp,
 } from "firebase/database";
 import userType from "components/interfaces/userType";
 
@@ -131,7 +132,7 @@ function NewDocButton({ auth, setUserData, ...props }: any) {
       roles: {
         [auth.user.uid]: "owner",
       },
-      timestamp: Math.floor(Date.now() / 1000),
+      timestamp: serverTimestamp(),
       title: title,
     });
 
@@ -263,20 +264,25 @@ function Navbar({ auth, userData, setUserData, ...props }: any) {
 }
 
 function parseTime(timeStamp: number | undefined): string {
-  const curTime: number = Math.floor(Date.now() / 1000);
+  let curTime: number = Date.now();
   const isLeap = (year: number) => new Date(year, 1, 29).getDate() === 29;
 
   if (timeStamp === undefined) return "";
   if (timeStamp > curTime) {
-    // TODO: Alert notification?
-    console.log("Misidentified time");
-    return "ERROR";
+    // Local time might be out of sync with server time. Assume timeStamp is better.
+    // Perhaps get serverTime instead?
+    curTime = timeStamp;
+    //console.log("Misidentified time");
+    //return "ERROR";
   }
 
-  const pastDate: Date = new Date(timeStamp * 1000);
-  const curDate: Date = new Date(curTime * 1000);
+  const pastDate: Date = new Date(timeStamp);
+  const curDate: Date = new Date(curTime);
 
-  if (curTime - timeStamp >= (365 + +isLeap(curDate.getFullYear())) * 86400) {
+  if (
+    curTime - timeStamp >=
+    (365 + +isLeap(curDate.getFullYear())) * 86_400_000
+  ) {
     if (curDate.getFullYear() - pastDate.getFullYear() === 1) return "a year";
     else return curDate.getFullYear() - pastDate.getFullYear() + " years";
   } else if (curDate.getMonth() !== pastDate.getMonth()) {
@@ -285,21 +291,21 @@ function parseTime(timeStamp: number | undefined): string {
 
     if (diff === 1) return "a month";
     else return diff + " months";
-  } else if (curTime - timeStamp >= 86400) {
-    let diff = Math.floor((curTime - timeStamp) / 86400);
+  } else if (curTime - timeStamp >= 86_400_000) {
+    let diff = Math.floor((curTime - timeStamp) / 86_400_000);
     if (diff === 1) return "a day";
     else return diff + " days";
-  } else if (curTime - timeStamp >= 3600) {
-    let diff = Math.floor((curTime - timeStamp) / 3600);
+  } else if (curTime - timeStamp >= 3_600_000) {
+    let diff = Math.floor((curTime - timeStamp) / 3_600_000);
     if (diff === 1) return "an hour";
     else return diff + " hours";
-  } else if (curTime - timeStamp >= 60) {
-    let diff = Math.floor((curTime - timeStamp) / 60);
+  } else if (curTime - timeStamp >= 60_000) {
+    let diff = Math.floor((curTime - timeStamp) / 60_000);
     if (diff === 1) return "a minute";
     else return diff + " minutes";
-  } else if (curTime - timeStamp > 0) {
-    if (curTime - timeStamp === 1) return "a second";
-    else return curTime - timeStamp + " seconds";
+  } else if (curTime - timeStamp >= 1000) {
+    if (curTime - timeStamp < 2_000) return "a second";
+    else return (curTime - timeStamp) / 1000 + " seconds";
   } else {
     return "less than a second";
   }
