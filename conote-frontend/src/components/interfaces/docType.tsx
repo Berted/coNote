@@ -1,5 +1,7 @@
 export default interface docType {
-  content: any;
+  history: any;
+  users: any;
+  checkpoint: any;
   public: boolean;
   roles: any;
   timestamp: number;
