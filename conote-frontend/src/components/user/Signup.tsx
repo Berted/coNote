@@ -8,7 +8,7 @@ import {
 import { Link as RouteLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useProvideAuth } from "hooks/useAuth";
-import Userform from "components/user/Userform";
+import Signupform from "./Signupform";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -20,9 +20,9 @@ export default function Login() {
         <Heading size="3xl" fontFamily="League Spartan">
           Sign up
         </Heading>
-        <Userform
-          onButtonClick={(email: string, password: string) => {
-            authentication.signup(email, password)
+        <Signupform
+          onButtonClick={(email: string, password: string, props: any) => {
+            authentication.signup(email, password, props)
               .then(response => navigate("/dashboard"))
               .catch(error => console.log(error));
           }}

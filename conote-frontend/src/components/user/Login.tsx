@@ -8,7 +8,7 @@ import {
 import { Link as RouteLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useProvideAuth } from "hooks/useAuth";
-import Userform from "./Userform";
+import Loginform from "./Loginform";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ export default function Login() {
         <Heading size="3xl" fontFamily="League Spartan">
           Login
         </Heading>
-        <Userform
+        <Loginform
           onButtonClick={(email: string, password: string) => {
             authentication.signin(email, password)
               .then(response => navigate("/dashboard"))

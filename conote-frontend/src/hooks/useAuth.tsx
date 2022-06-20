@@ -45,8 +45,9 @@ export function useProvideAuth() {
       }
     );
   };
-  const signup = (email: any, password: any) => {
+  const signup = (email: any, password: any, props: any) => {
     return createUserWithEmailAndPassword(auth, email, password)
+<<<<<<< HEAD
       .then((response) => {
         setUser(response.user);
         return response.user;
@@ -60,6 +61,26 @@ export function useProvideAuth() {
           console.log("Set Error: " + e); // TODO: Alert notification?
         });
       });
+=======
+      .then(
+        (response) => {
+          setUser(response.user);
+          return response.user;
+        }
+      )
+      .then(
+        (user) => {
+          set(ref(getDatabase(), `users/${user.uid}`), {
+            fullname: props.fullname,
+            img_url: "",
+            owned_documents: {}
+          })
+            .catch((e) => {
+              console.log("Set Error: " + e); // TODO: Alert notification?
+            });
+        }
+      );
+>>>>>>> Add fullname input to signup form
   };
   const signout = () => {
     return signOut(auth).then(() => {
