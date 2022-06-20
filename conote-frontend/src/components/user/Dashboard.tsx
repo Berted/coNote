@@ -4,6 +4,8 @@ import {
   HStack,
   Flex,
   Link,
+  LinkBox,
+  LinkOverlay,
   Text,
   Button,
   Box,
@@ -54,6 +56,7 @@ import {
   serverTimestamp,
 } from "firebase/database";
 import userType from "components/interfaces/userType";
+import { generateKey } from "crypto";
 
 async function getUserData(auth: any, setUserData: any) {
   get(ref(getDatabase(), `users/${auth.user.uid}`))
@@ -206,6 +209,7 @@ function DeleteDocButton({ docID, title, auth, setUserData, ...props }: any) {
     <>
       <IconButton
         textColor="blue.500"
+        colorScheme="telegram"
         icon={<IoTrashSharp />}
         aria-label={"Delete note '" + title + "'"}
         size="md"
@@ -335,29 +339,35 @@ function DocCard({ docID, setUserData, auth, ...props }: any) {
   }, [docID]);
 
   return (
-    <Box
+    <LinkBox
       flexGrow="1"
       minH="120px"
       borderWidth="1px"
       borderRadius="lg"
+      borderColor="gray.200"
       overflow="hidden"
       px="5px"
       paddingY="2"
       paddingX="5"
       textAlign="left"
       verticalAlign="top"
+      transition="background-color 100ms linear"
+      _hover={{ bgColor: "gray.50" }}
     >
-      <Box
-        mt="1"
-        fontWeight="semibold"
-        fontSize="lg"
-        as="h4"
-        lineHeight="tight"
-        noOfLines={1}
-      >
-        {title}
-      </Box>
-      <HStack mt="2px" textColor="gray.300" fontSize="xs">
+      <LinkOverlay as={RouteLink} to={"/docs/edit/" + docID}>
+        <Box
+          mt="1"
+          fontWeight="semibold"
+          fontSize="lg"
+          as="h4"
+          lineHeight="tight"
+          noOfLines={1}
+        >
+          {title}
+        </Box>
+      </LinkOverlay>
+
+      <HStack mt="2px" textColor="gray.400" fontSize="xs">
         <IoTime />
         <Text>Modified {parseTime(timestamp)} ago</Text>
       </HStack>
@@ -370,7 +380,7 @@ function DocCard({ docID, setUserData, auth, ...props }: any) {
           auth={auth}
         />
       </Flex>
-    </Box>
+    </LinkBox>
   );
 }
 
