@@ -10,7 +10,7 @@ const ErrorMsg: any = {
   500: "Internal Server Error. Please contact the website administrator.",
 };
 
-const defaultRemainingTime = 7;
+const defaultRemainingTime = 5;
 
 export default function ErrorPage() {
   const navigate = useNavigate();

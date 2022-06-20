@@ -15,8 +15,6 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 
-
-
 // Add your Firebase credentials
 const auth = getAuth(app);
 const authContext: any = createContext(undefined);
@@ -34,7 +32,7 @@ export const useAuth = () => {
 };
 // Provider hook that creates auth object and handles state
 export function useProvideAuth() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any>(false);
   // Wrap any Firebase methods we want to use making sure ...
   // ... to save the user to state.
   const signin = (email: any, password: any) => {
