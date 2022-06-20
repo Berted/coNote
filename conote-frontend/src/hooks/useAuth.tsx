@@ -46,7 +46,7 @@ export function useProvideAuth() {
       }
     );
   };
-  const signup = (email: any, password: any) => {
+  const signup = (email: any, password: any, props: any) => {
     return createUserWithEmailAndPassword(auth, email, password)
       .then(
         (response) => {
@@ -57,7 +57,7 @@ export function useProvideAuth() {
       .then(
         (user) => {
           set(ref(getDatabase(), `users/${user.uid}`), {
-            fullname: user.email,
+            fullname: props.fullname,
             img_url: "",
             owned_documents: {}
           })
