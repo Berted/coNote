@@ -127,7 +127,6 @@ function NewDocButton({ auth, setUserData, ...props }: any) {
 
   const onNewDoc = (e: any) => {
     const newDocRef = push(ref(getDatabase(), `docs`), {
-      content: "",
       public: false,
       roles: {
         [auth.user.uid]: "owner",
