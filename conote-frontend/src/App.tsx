@@ -61,6 +61,16 @@ function App() {
             }
           />
           <Route path="error/:errorID" element={<ErrorPage />} />
+          <Route
+            path="*"
+            element={
+              <RedirectRoute
+                isAllowed={false}
+                redirectPath="/error/404"
+                children={undefined}
+              />
+            }
+          />
         </Routes>
       </div>
     </BrowserRouter>
