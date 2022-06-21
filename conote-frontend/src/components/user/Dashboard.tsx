@@ -9,24 +9,7 @@ import {
   Text,
   Button,
   Box,
-  Avatar,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverHeader,
-  PopoverBody,
-  PopoverArrow,
   useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  FormControl,
-  FormLabel,
-  Input,
   IconButton,
   SimpleGrid,
   AlertDialog,
@@ -40,168 +23,27 @@ import {
 import React from "react";
 import { useState, useEffect } from "react";
 import { Link as RouteLink } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+
 import { useProvideAuth } from "hooks/useAuth";
-import NavbarContainer from "components/NavbarContainer";
-import Logo from "components/Logo";
-import { IoCreateSharp, IoTime, IoTrashSharp } from "react-icons/io5";
-import {
-  getDatabase,
-  get,
-  ref,
-  push,
-  set,
-  child,
-  remove,
-  serverTimestamp,
-} from "firebase/database";
-import userType from "components/interfaces/userType";
-import { generateKey } from "crypto";
 
-async function getUserData(auth: any, setUserData: any) {
-  get(ref(getDatabase(), `users/${auth.user.uid}`))
-    .then((snapshot) => {
-      if (snapshot.exists()) {
-        let snapvar = snapshot.val();
-        if (snapvar.owned_documents === undefined) {
-          snapvar.owned_documents = {};
-        }
-        setUserData(snapvar);
-      } else {
-        setUserData({
-          fullname: auth.user.email,
-          img_url: "",
-          owned_documents: {},
-        });
+import { IoTime, IoTrashSharp } from "react-icons/io5";
+import { getDatabase, get, ref, child, remove } from "firebase/database";
+import DashboardNavbar from "./DashboardNavbar";
 
-        // TOTHINK: Currently auto-populates the database with default values if user is not in database. Maybe change?
-        set(ref(getDatabase(), `users/${auth.user.uid}`), {
-          fullname: auth.user.email,
-          img_url: "",
-          owned_documents: {},
-        });
-      }
-    })
-    .catch((e) => console.log("ERROR: " + e));
-}
-
-function UserButton({ auth, userData, ...props }: any) {
-  const navigate = useNavigate();
-
-  return (
-    <Popover placement="bottom-end" autoFocus={false}>
-      <PopoverTrigger>
-        <Avatar
-          bg="blue.400"
-          _hover={{
-            bg: "blue.600",
-          }}
-          role="button"
-        />
-      </PopoverTrigger>
-      <PopoverContent boxShadow="sm">
-        <PopoverArrow />
-        <PopoverHeader>
-          Hi, <b>{userData === undefined ? "" : userData.fullname}</b>!
-        </PopoverHeader>
-        <PopoverBody>
-          <Button
-            onClick={() => {
-              auth
-                .signout()
-                .then((response: any) => navigate("/"))
-                .catch((error: any) => console.log(error));
-            }}
-            colorScheme="blue"
-            boxShadow="base"
-            padding="0px 1.5em"
-          >
-            Logout
-          </Button>
-        </PopoverBody>
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-function NewDocButton({ auth, setUserData, ...props }: any) {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [title, setTitle] = useState("");
-
-  const onNewDoc = (e: any) => {
-    const newDocRef = push(ref(getDatabase(), `docs`), {
-      public: false,
-      roles: {
-        [auth.user.uid]: "owner",
-      },
-      timestamp: serverTimestamp(),
-      title: title,
-    });
-
-    set(
-      ref(
-        getDatabase(),
-        `users/${auth.user.uid}/owned_documents/${newDocRef.key}`
-      ),
-      true
-    )
-      .then(() => {
-        getUserData(auth, setUserData);
-      })
-      .catch((e) => {
-        console.log("Set Error: " + e); // TODO: Alert notification?
-      });
-    setTitle("");
-    onClose();
-  };
-
-  return (
-    <>
-      <Button leftIcon={<IoCreateSharp />} colorScheme="blue" onClick={onOpen}>
-        New Note
-      </Button>
-
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Create a New Note</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <FormControl id="title">
-              <FormLabel htmlFor="title">Title</FormLabel>
-              <Input
-                onChange={(e) => setTitle(e.target.value)}
-                value={title}
-                placeholder="Your note title"
-              />
-            </FormControl>
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="blue" paddingX="1.5em" onClick={onNewDoc}>
-              Create
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
-  );
-}
-
-function DeleteDocButton({ docID, title, auth, setUserData, ...props }: any) {
+function DeleteDocButton({ docID, title, ...props }: any) {
+  const auth = useProvideAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef(null);
 
   const onDelete = (e: any) => {
+    if (!auth.user) return;
+
     remove(ref(getDatabase(), `docs/${docID}`));
     remove(
       ref(getDatabase(), `users/${auth.user.uid}/owned_documents/${docID}`)
-    )
-      .then(() => {
-        getUserData(auth, setUserData);
-      })
-      .catch((e) => {
-        console.log(docID + " delete error: " + e); //TODO: Alert Notification?
-      });
+    ).catch((e) => {
+      console.log(docID + " delete error: " + e); //TODO: Alert Notification?
+    });
     onClose();
   };
 
@@ -241,28 +83,6 @@ function DeleteDocButton({ docID, title, auth, setUserData, ...props }: any) {
         </AlertDialogOverlay>
       </AlertDialog>
     </>
-  );
-}
-
-function Navbar({ auth, userData, setUserData, ...props }: any) {
-  return (
-    <NavbarContainer>
-      <Logo
-        fontSize="24pt"
-        marginBottom="-0.4em"
-        _hover={{
-          textShadow: "1px 1px 3px #00000033",
-        }}
-        as={RouteLink}
-        to="/"
-      />
-      <HStack spacing="4">
-        <NewDocButton auth={auth} setUserData={setUserData} />
-        <Flex align="center">
-          <UserButton auth={auth} userData={userData} />
-        </Flex>
-      </HStack>
-    </NavbarContainer>
   );
 }
 
@@ -308,13 +128,13 @@ function parseTime(timeStamp: number | undefined): string {
     else return diff + " minutes";
   } else if (curTime - timeStamp >= 1000) {
     if (curTime - timeStamp < 2_000) return "a second";
-    else return (curTime - timeStamp) / 1000 + " seconds";
+    else return Math.floor((curTime - timeStamp) / 1_000) + " seconds";
   } else {
     return "less than a second";
   }
 }
 
-function DocCard({ docID, setUserData, auth, ...props }: any) {
+function DocCard({ docID, ...props }: any) {
   const [title, setTitle] = useState<string | undefined>(undefined);
   const [timestamp, setTimestamp] = useState<number | undefined>(undefined);
 
@@ -373,40 +193,24 @@ function DocCard({ docID, setUserData, auth, ...props }: any) {
       </HStack>
 
       <Flex w="vw" mt="10px" mr="-5px" flexDirection="row-reverse">
-        <DeleteDocButton
-          docID={docID}
-          title={title}
-          setUserData={setUserData}
-          auth={auth}
-        />
+        <DeleteDocButton docID={docID} title={title} />
       </Flex>
     </LinkBox>
   );
 }
 
 export default function Dashboard() {
-  const auth = useProvideAuth();
-
-  const [userData, setUserData] = useState<userType | undefined>(undefined);
-
-  useEffect(() => {
-    if (auth.user) {
-      getUserData(auth, setUserData);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth.user]);
+  const { userData, ...auth } = useProvideAuth();
 
   return (
     auth.user && (
       <Box minH="100vh">
-        <Navbar auth={auth} userData={userData} setUserData={setUserData} />
+        <DashboardNavbar />
 
         <SimpleGrid minChildWidth="240px" paddingX="7" marginTop="2" gap="5">
           {userData !== undefined &&
             Object.keys(userData.owned_documents).map((item) => {
-              return (
-                <DocCard docID={item} setUserData={setUserData} auth={auth} />
-              );
+              return <DocCard docID={item} />;
             })}
         </SimpleGrid>
       </Box>
