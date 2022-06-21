@@ -30,7 +30,7 @@ function PasswordInput(props: any) {
   );
 }
 
-export default function Userform(props: any) {
+export default function Loginform(props: any) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
