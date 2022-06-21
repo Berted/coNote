@@ -13,6 +13,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useProvideAuth } from "hooks/useAuth";
+import ErrorPage from "components/ErrorPage";
 
 function App() {
   const authentication = useProvideAuth();
@@ -57,6 +58,18 @@ function App() {
               <RedirectRoute isAllowed={!!authentication.user} redirectPath="/">
                 <Dashboard />
               </RedirectRoute>
+            }
+          />
+          <Route path="docs/edit/:docID" element={<Editor />} />
+          <Route path="error/:errorID" element={<ErrorPage />} />
+          <Route
+            path="*"
+            element={
+              <RedirectRoute
+                isAllowed={false}
+                redirectPath="/error/404"
+                children={undefined}
+              />
             }
           />
         </Routes>
