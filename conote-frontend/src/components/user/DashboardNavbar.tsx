@@ -46,6 +46,7 @@ function UserButton(props: any) {
       <PopoverTrigger>
         <Avatar
           bg="blue.400"
+          transition="background-color 100ms linear"
           _hover={{
             bg: "blue.600",
           }}
@@ -145,8 +146,9 @@ export default function DashboardNavbar(props: any) {
       <Logo
         fontSize="24pt"
         marginBottom="-0.4em"
+        transition="transform 100ms linear"
         _hover={{
-          textShadow: "1px 1px 3px #00000033",
+          transform: "scale(1.05)",
         }}
         as={RouteLink}
         to="/"
