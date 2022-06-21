@@ -6,12 +6,14 @@ import {
   FormLabel,
   Input,
   Button,
+  useToast,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProvideAuth } from "hooks/useAuth";
 
-export default function Forgetpassword() {
+export default function ForgetPassword() {
+  const toast = useToast();
   const navigate = useNavigate();
   const authentication = useProvideAuth();
   const [email, setEmail] = useState("");
@@ -43,8 +45,34 @@ export default function Forgetpassword() {
           <Button
             onClick={() => {
               authentication.sendPwdResetEmail(email)
-                .then(response => setEmail(""))
-                .catch(error => console.log(error));
+                .then(response => {
+                  navigate("/login");
+                  toast({
+                    title: "Password reset link sent to your email",
+                    status: "info",
+                    isClosable: true
+                  });  
+                })
+                .catch(error => {
+                  let errorTitle = "";
+                  switch (error.code) {
+                    case "auth/invalid-email":
+                      errorTitle = "Invalid email";
+                      break;
+                    case "auth/user-not-found":
+                      errorTitle = "User not found";
+                      break;
+                    default:
+                      console.log(error.code);
+                      errorTitle = "Error";
+                      break;
+                  }
+                  toast({
+                    title: errorTitle,
+                    status: "error",
+                    isClosable: true
+                  });  
+                });
             }}
             colorScheme="blue"
             boxShadow="base"

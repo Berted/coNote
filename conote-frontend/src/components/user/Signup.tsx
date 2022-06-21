@@ -4,13 +4,73 @@ import {
   Flex,
   Link,
   Text,
+  FormControl,
+  FormLabel,
+  Input,
+  Button,
+  useToast
 } from "@chakra-ui/react";
 import { Link as RouteLink } from "react-router-dom";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProvideAuth } from "hooks/useAuth";
-import Signupform from "./Signupform";
+import PasswordInput from "./PasswordInput";
+
+function SignupForm(props: any) {
+  const [fullname, setFullname] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  return (
+    <VStack
+      boxShadow="base"
+      borderRadius="md"
+      padding="7"
+      spacing="5"
+      w="70vw"
+      minW="340px"
+      maxW="lg"
+    >
+      <FormControl id="fullname">
+        <FormLabel htmlFor="fullname">Your name</FormLabel>
+        <Input
+          value={fullname}
+          onChange={(e) => setFullname(e.target.value)}
+          type="fullname"
+          placeholder="John Doe"
+        />
+      </FormControl>
+      <FormControl id="email">
+        <FormLabel htmlFor="email">Email address</FormLabel>
+        <Input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          type="email"
+          placeholder="johndoe@example.com"
+        />
+      </FormControl>
+      <FormControl id="password">
+        <FormLabel htmlFor="password">Password</FormLabel>
+        <PasswordInput
+          value={password}
+          onChange={(e: any) => setPassword(e.target.value)}
+          type="password"
+        />
+      </FormControl>
+      <Button
+        onClick={() => props.onButtonClick(email, password, { fullname: fullname })}
+        colorScheme="blue"
+        boxShadow="base"
+        padding="0px 1.5em"
+      >
+        {props.buttonValue}
+      </Button>
+    </VStack>
+  );
+}
 
 export default function Login() {
+  const toast = useToast();
   const navigate = useNavigate();
   const authentication = useProvideAuth();
 
@@ -20,11 +80,40 @@ export default function Login() {
         <Heading size="3xl" fontFamily="League Spartan">
           Sign up
         </Heading>
-        <Signupform
+        <SignupForm
           onButtonClick={(email: string, password: string, props: any) => {
             authentication.signup(email, password, props)
-              .then(response => navigate("/dashboard"))
-              .catch(error => console.log(error));
+              .then(response => {
+                navigate("/dashboard");
+                toast({
+                  title: "Logged in!",
+                  status: "success",
+                  isClosable: true
+                });
+              })
+              .catch(error => {
+                let errorTitle = "";
+                switch (error.code) {
+                  case "auth/email-already-in-use":
+                    errorTitle = "Email is already in use";
+                    break;
+                  case "auth/invalid-email":
+                    errorTitle = "Invalid email";
+                    break;
+                  case "auth/weak-password":
+                    errorTitle = "Password must contain at least 6 characters";
+                    break;
+                  default:
+                    console.log(error.code);
+                    errorTitle = "Error";
+                    break;
+                }
+                toast({
+                  title: errorTitle,
+                  status: "error",
+                  isClosable: true
+                });
+              });
           }}
           buttonValue={"Sign up"}
         />
