@@ -15,6 +15,7 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 
+import { getDatabase, ref, set } from "firebase/database";
 
 
 // Add your Firebase credentials
@@ -45,13 +46,26 @@ export function useProvideAuth() {
       }
     );
   };
-  const signup = (email: any, password: any) => {
-    return createUserWithEmailAndPassword(auth, email, password).then(
-      (response) => {
-        setUser(response.user);
-        return response.user;
-      }
-    );
+  const signup = (email: any, password: any, props: any) => {
+    return createUserWithEmailAndPassword(auth, email, password)
+      .then(
+        (response) => {
+          setUser(response.user);
+          return response.user;
+        }
+      )
+      .then(
+        (user) => {
+          set(ref(getDatabase(), `users/${user.uid}`), {
+            fullname: props.fullname,
+            img_url: "",
+            owned_documents: {}
+          })
+            .catch((e) => {
+              console.log("Set Error: " + e); // TODO: Alert notification?
+            });
+        }
+      );
   };
   const signout = () => {
     return signOut(auth).then(() => {
