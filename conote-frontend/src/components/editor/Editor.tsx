@@ -19,7 +19,7 @@ import Firepad from "@lucafabbian/firepad";
 
 import { useProvideAuth } from "hooks/useAuth";
 import { compatApp } from "config/firebaseConfig";
-import { get, getDatabase, ref } from "firebase/database";
+import { set, get, getDatabase, ref, serverTimestamp } from "firebase/database";
 import firebase from "firebase/compat/app";
 import "firebase/compat/database";
 
@@ -73,6 +73,8 @@ const Editor = () => {
       // TODO: Not authenticated case is not yet done.
     }
 
+    let lastSecond: number = 0;
+
     const view = new EditorView({
       extensions: [
         basicSetup,
@@ -80,6 +82,11 @@ const Editor = () => {
         EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
           if (update.changes) {
+            // Only update timestamp every second.
+            if (Date.now() - lastSecond >= 1_000) {
+              set(ref(getDatabase(), docRef + "/timestamp"), serverTimestamp());
+              lastSecond = Date.now();
+            }
             setDocContent(update.state.doc.toString());
           }
         }),
@@ -110,7 +117,7 @@ const Editor = () => {
 
   return (
     <Box minH="100vh">
-      <EditorNavbar />
+      <EditorNavbar docID={params.docID} />
       <HStack
         paddingX="2"
         marginTop="20px"
