@@ -173,12 +173,12 @@ function EditTagsButton({ docID, title, ...props }: any) {
                     case 'Tab':
                     case 'Enter':
                     case ',':
+                      e.preventDefault();
                       if (value.length === 0) {
                         setTagError("Empty tag");
                       } else if (tags.includes(value)) {
                         setTagError("Tag already exists");
                       } else {
-                        e.preventDefault();
                         setInput("");
                         setTags(tags => [...tags, value]);
                         setTagError("");
@@ -186,6 +186,7 @@ function EditTagsButton({ docID, title, ...props }: any) {
                       break;
                     case 'Backspace':
                       if (value.length === 0) {
+                        e.preventDefault();
                         if (tags.length === 0) {
                           setTagError("No tags to delete");
                         } else {
