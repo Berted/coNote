@@ -69,6 +69,17 @@ export function useProvideAuth() {
             set(ref(getDatabase(), `users/${user.uid}/img_url`), "");
           }
         });
+
+        // TODO: Only needed as this is added at a later date in comparison to the original database. A new database will no longer need this line.
+        if (user.email) {
+          set(
+            ref(
+              getDatabase(),
+              `email_to_uid/${user.email.replaceAll(".", ",")}`
+            ),
+            user.uid
+          ).catch((e) => console.log(e));
+        }
       });
   };
   const signup = (email: string, password: string, props: any) => {
@@ -81,11 +92,21 @@ export function useProvideAuth() {
         set(ref(getDatabase(), `users/${user.uid}`), {
           fullname: props.fullname,
           img_url: "",
-          email: user.email,
           owned_documents: {},
         }).catch((e) => {
           console.log("SetUserData Error: " + e); // TODO: Alert notification?
         });
+
+        if (user.email) {
+          // TODO: Solution is a bit hacky, but works for now. Could crop out as an issue later, maybe fix? (or at least filter sign-ups to not allow these id-s).
+          set(
+            ref(
+              getDatabase(),
+              `email_to_uid/${user.email.replaceAll(".", ",")}`
+            ),
+            user.uid
+          ).catch((e) => console.log("SetEmailData Error: " + e));
+        }
       });
   };
   const signout = () => {
@@ -113,10 +134,10 @@ export function useProvideAuth() {
         }
         setUserData(snapvar);
       } else {
+        // TODO: Can be deprecated soon.
         set(ref(getDatabase(), `users/${user.uid}`), {
           fullname: user.email || "[UNKNOWN]",
           img_url: "",
-          email: user.email,
           owned_documents: {},
         });
       }

@@ -58,7 +58,6 @@ const Editor = () => {
         get(ref(getDatabase(), docRef + "/roles/" + auth.user.uid))
           .then((snapshot) => {
             if (!snapshot.exists() || snapshot.val() === "viewer") {
-              console.log("Wut1");
               navigate("/error/403");
             }
           })
