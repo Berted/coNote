@@ -34,8 +34,9 @@ import { Link as RouteLink } from "react-router-dom";
 import React from "react";
 import { useState, useEffect } from "react";
 import { IoPricetagsSharp, IoTime, IoTrashSharp } from "react-icons/io5";
-import { getDatabase, get, ref, child, remove, update } from "firebase/database";
+import { getDatabase, get, ref, child, remove, update, onValue, set, push, orderByValue, query, equalTo } from "firebase/database";
 import { useProvideAuth } from "hooks/useAuth";
+import { getModularInstance } from "@firebase/util";
 
 function DeleteDocButton({ docID, title, ...props }: any) {
   const auth = useProvideAuth();
@@ -94,22 +95,52 @@ function DeleteDocButton({ docID, title, ...props }: any) {
 }
 
 function EditTagsButton({ docID, title, ...props }: any) {
-  const auth = useProvideAuth();
+  const { user, ...auth } = useProvideAuth();
+  const tagsRef = child(ref(getDatabase(), `docs/${docID}`), "tags");
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [tags, setTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<Object | undefined>(undefined);
   const [input, setInput] = useState("");
   const [tagError, setTagError] = useState("");
 
   useEffect(() => {
-    if (!auth.user) return;
-    update(ref(getDatabase(), `docs/${docID}`), {
-      tags: tags
-    });
-  }, [tags]);
+    if (!user) return;
+    const unsubscribe = onValue(tagsRef,
+      snapshot => setTags(
+        snapshot.exists() ? snapshot.val() :
+          undefined),
+      (e) => {
+        // TODO: Alert notification?
+        console.log("Tags fetch error: " + e);
+      }
+    );
+    return () => {
+      unsubscribe();
+    };
+  }, [user]);
 
-  const handleTagDelete = (value: string) => {
-    if (tags.includes(value)) {
-      setTags(tags.filter(x => x !== value));
+  const findTagKey = (value: string) => {
+    if (tags !== undefined) {
+      const key = Object.entries(tags)
+        .filter((val) => val[1] === value);
+      return key.length === 0 ? undefined : key[0][0];
+    }
+    return undefined;
+  };
+
+  const handleTagCreate = (value: string) => {
+    if (!user) return;
+    push(tagsRef, value);
+  };
+
+  const handleTagDelete = async (value: string) => {
+    if (!user) return;
+    let key = findTagKey(value);
+    if (key !== undefined) {
+      remove(child(tagsRef, key))
+        .catch(e => {
+          // TODO: Alert notification?
+          console.log("Tags fetch error: " + e);
+        });
     }
   };
 
@@ -123,18 +154,9 @@ function EditTagsButton({ docID, title, ...props }: any) {
         size="md"
         variant="ghost"
         onClick={() => {
-          get(child(ref(getDatabase(), `docs/${docID}`), `tags`))
-            .then((snapshot) => {
-              setInput("");
-              setTagError("");
-              if (snapshot.exists()) {
-                setTags(snapshot.val());
-              } else {
-                setTags([]);
-              }
-            })
-            .then(onOpen)
-            .catch((e) => console.log("Tags Error: " + e)); // TODO: Alert notification?
+          setInput("");
+          setTagError("");
+          onOpen();
         }}
       />
 
@@ -149,7 +171,7 @@ function EditTagsButton({ docID, title, ...props }: any) {
             <ModalCloseButton />
           </ModalHeader>
           <ModalBody>
-            {tags !== undefined && tags.map(tag => {
+            {tags !== undefined && Object.values(tags).map(tag => {
               return (
                 <Tag>
                   <TagLabel>{tag}</TagLabel>
@@ -176,21 +198,21 @@ function EditTagsButton({ docID, title, ...props }: any) {
                       e.preventDefault();
                       if (value.length === 0) {
                         setTagError("Empty tag");
-                      } else if (tags.includes(value)) {
+                      } else if (findTagKey(value) !== undefined) {
                         setTagError("Tag already exists");
                       } else {
                         setInput("");
-                        setTags(tags => [...tags, value]);
                         setTagError("");
+                        handleTagCreate(value);
                       }
                       break;
                     case 'Backspace':
                       if (value.length === 0) {
                         e.preventDefault();
-                        if (tags.length === 0) {
+                        if (tags === undefined) {
                           setTagError("No tags to delete");
                         } else {
-                          let lastTag = tags[tags.length - 1];
+                          let lastTag = Object.values(tags).pop();
                           handleTagDelete(lastTag);
                           setInput(lastTag);
                           setTagError("");
