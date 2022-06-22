@@ -100,18 +100,17 @@ function EditTagsButton({ docID, title, ...props }: any) {
   const [input, setInput] = useState("");
   const [tagError, setTagError] = useState("");
 
-  const handleTagDelete = (value: string) => {
-    if (tags.includes(value)) {
-      setTags(tags.filter(x => x !== value));
-    }
-  };
-
-  const onSave = (e: any) => {
+  useEffect(() => {
     if (!auth.user) return;
     update(ref(getDatabase(), `docs/${docID}`), {
       tags: tags
     });
-    onClose();
+  }, [tags]);
+
+  const handleTagDelete = (value: string) => {
+    if (tags.includes(value)) {
+      setTags(tags.filter(x => x !== value));
+    }
   };
 
   return (
@@ -190,7 +189,9 @@ function EditTagsButton({ docID, title, ...props }: any) {
                         if (tags.length === 0) {
                           setTagError("No tags to delete");
                         } else {
-                          handleTagDelete(tags[tags.length - 1]);
+                          let lastTag = tags[tags.length - 1];
+                          handleTagDelete(lastTag);
+                          setInput(lastTag);
                           setTagError("");
                         }
                       }
@@ -214,11 +215,8 @@ function EditTagsButton({ docID, title, ...props }: any) {
             </FormControl>
           </ModalBody>
           <ModalFooter>
-            <Button onClick={onClose} mr="3">
-              Cancel
-            </Button>
-            <Button colorScheme="blue" onClick={onSave}>
-              Save
+            <Button colorScheme="blue" onClick={onClose}>
+              Close
             </Button>
           </ModalFooter>
         </ModalContent>
