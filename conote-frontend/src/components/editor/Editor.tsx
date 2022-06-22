@@ -23,6 +23,8 @@ import { get, getDatabase, ref } from "firebase/database";
 import firebase from "firebase/compat/app";
 import "firebase/compat/database";
 
+import EditorNavbar from "./EditorNavbar";
+
 function MarkdownPreview({ docContent, ...props }: any) {
   return (
     <>
@@ -107,21 +109,11 @@ const Editor = () => {
   }, [editorRef.current, auth.user]);
 
   return (
-    <VStack padding="1">
-      <Link
-        color="gray.400"
-        _hover={{
-          textColor: "gray.600",
-          textDecoration: "underline",
-        }}
-        as={RouteLink}
-        to="/"
-      >
-        &#60; Return home.
-      </Link>
+    <Box minH="100vh">
+      <EditorNavbar />
       <HStack
-        w="100vw"
-        padding="2"
+        paddingX="2"
+        marginTop="20px"
         verticalAlign="top"
         textAlign="left"
         h="90vh"
@@ -140,7 +132,7 @@ const Editor = () => {
           </Box>
         </VStack>
       </HStack>
-    </VStack>
+    </Box>
   );
 };
 
