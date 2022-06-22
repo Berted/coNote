@@ -82,12 +82,15 @@ const Editor = () => {
         EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
           if (update.changes) {
+            setDocContent(update.state.doc.toString());
+          }
+
+          if (update.docChanged) {
             // Only update timestamp every second.
             if (Date.now() - lastSecond >= 1_000) {
               set(ref(getDatabase(), docRef + "/timestamp"), serverTimestamp());
               lastSecond = Date.now();
             }
-            setDocContent(update.state.doc.toString());
           }
         }),
       ],
