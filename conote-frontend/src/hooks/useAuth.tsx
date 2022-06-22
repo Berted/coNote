@@ -18,6 +18,7 @@ import {
 import {
   getDatabase,
   ref,
+  get,
   set,
   DataSnapshot,
   onValue,
@@ -46,12 +47,29 @@ export function useProvideAuth() {
   // Wrap any Firebase methods we want to use making sure ...
   // ... to save the user to state.
   const signin = (email: string, password: string) => {
-    return signInWithEmailAndPassword(auth, email, password).then(
-      (response) => {
+    return signInWithEmailAndPassword(auth, email, password)
+      .then((response) => {
         setUser(response.user);
         return response.user;
-      }
-    );
+      })
+      .then((user) => {
+        get(ref(getDatabase(), `users/${user.uid}`)).then((snapshot) => {
+          let snapvar = snapshot.val();
+          // TODO: Better solutions definitely exist, but autopopulating the fields works for now.
+          if (snapvar.email === undefined) {
+            set(ref(getDatabase(), `users/${user.uid}/email`), user.email);
+          }
+          if (snapvar.fullname === undefined) {
+            set(
+              ref(getDatabase(), `users/${user.uid}/fullname`),
+              user.email || "[UNKNOWN]"
+            );
+          }
+          if (snapvar.img_url === undefined) {
+            set(ref(getDatabase(), `users/${user.uid}/img_url`), "");
+          }
+        });
+      });
   };
   const signup = (email: string, password: string, props: any) => {
     return createUserWithEmailAndPassword(auth, email, password)
@@ -63,9 +81,10 @@ export function useProvideAuth() {
         set(ref(getDatabase(), `users/${user.uid}`), {
           fullname: props.fullname,
           img_url: "",
+          email: user.email,
           owned_documents: {},
         }).catch((e) => {
-          console.log("Set Error: " + e); // TODO: Alert notification?
+          console.log("SetUserData Error: " + e); // TODO: Alert notification?
         });
       });
   };
@@ -94,10 +113,10 @@ export function useProvideAuth() {
         }
         setUserData(snapvar);
       } else {
-        // TOTHINK: Currently auto-populates the database with default values if user is not in database. Maybe change?
         set(ref(getDatabase(), `users/${user.uid}`), {
-          fullname: user.email || "John Doe",
+          fullname: user.email || "[UNKNOWN]",
           img_url: "",
+          email: user.email,
           owned_documents: {},
         });
       }
