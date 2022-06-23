@@ -23,6 +23,7 @@ import {
   Thead,
   Tbody,
   Tfoot,
+  Tooltip,
   Tr,
   Th,
   Td,
@@ -31,6 +32,7 @@ import {
   FormErrorMessage,
   Box,
   useToast,
+  Toast,
 } from "@chakra-ui/react";
 
 import { useEffect, useState } from "react";
@@ -38,7 +40,7 @@ import { Link as RouteLink } from "react-router-dom";
 import NavbarContainer from "components/NavbarContainer";
 import Logo from "components/Logo";
 import UserButton from "components/user/UserButton";
-import { IoShare } from "react-icons/io5";
+import { IoShare, IoPersonRemove, IoClipboard } from "react-icons/io5";
 
 import { get, set, onValue, getDatabase, ref } from "firebase/database";
 import { useProvideAuth } from "hooks/useAuth";
@@ -49,14 +51,82 @@ function validateEmail(email: string) {
   );
 }
 
-function DeleteUserRoleButton({ uid, docID, ...props }: any) {}
+async function modifyUserRole(docID: string, uid: string, role: string | null) {
+  return set(ref(getDatabase(), `docs/${docID}/roles/${uid}`), role);
+}
 
-function AddCollaboratorForm({ docID, ...props }: any) {
+function EditUserRoleDropdown({ uid, role, docID, ...props }: any) {
+  const toast = useToast();
+
+  return (
+    <Select
+      value={role.toLowerCase()}
+      size="xs"
+      fontSize="sm"
+      variant="flushed"
+      onChange={(e) => {
+        modifyUserRole(docID, uid, e.target.value).catch((e) => {
+          toast({
+            title: "Error",
+            description:
+              "Unable to modify user role. Please report bug to developer. Error: " +
+              e,
+            status: "error",
+            duration: 7_500,
+            isClosable: true,
+          });
+        });
+      }}
+    >
+      <option value="editor">Editor</option>
+      <option value="viewer">Viewer</option>
+    </Select>
+  );
+}
+
+function DeleteUserRoleButton({ uid, docID, ...props }: any) {
+  const toast = useToast();
+
+  return (
+    <IconButton
+      aria-label={"delete user " + uid}
+      icon={<IoPersonRemove />}
+      colorScheme="blue"
+      variant="ghost"
+      size="xs"
+      onClick={(e) => {
+        modifyUserRole(docID, uid, null).catch((e) => {
+          toast({
+            title: "Error",
+            description:
+              "Unable to delete user. Please report bug to developer. Error: " +
+              e,
+            status: "error",
+            duration: 7_500,
+            isClosable: true,
+          });
+        });
+      }}
+    />
+  );
+}
+
+function AddCollaboratorForm({ docID, docRoles, disabled, ...props }: any) {
   const toast = useToast();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("editor");
 
   const onSubmit = () => {
+    if (!docRoles) {
+      toast({
+        title: "Error",
+        description:
+          "We're unable to retrieve the list of user roles. Please wait for a moment or check your internet connection.",
+        status: "error",
+        duration: 5_000,
+        isClosable: true,
+      });
+    }
     if (validateEmail(email)) {
       let filteredEmail = email.toLowerCase().replaceAll(".", ",");
       get(ref(getDatabase(), `email_to_uid/${filteredEmail}`)).then(
@@ -70,14 +140,18 @@ function AddCollaboratorForm({ docID, ...props }: any) {
               duration: 8_000,
               isClosable: true,
             });
-          } else {
+          } else if (docRoles.map((k: any) => k[0]).includes(snapshot.val())) {
             toast({
-              title: "Success",
-              description: "UID: " + snapshot.val(),
-              status: "success",
+              title: "Warning",
+              description:
+                "The user already collaborates in this document. You may use the dropdown menu in the table to modify their role.",
+              status: "warning",
               duration: 5_000,
               isClosable: true,
             });
+          } else {
+            modifyUserRole(docID, snapshot.val(), role);
+            setEmail("");
           }
         }
       );
@@ -94,7 +168,7 @@ function AddCollaboratorForm({ docID, ...props }: any) {
   };
 
   return (
-    <FormControl paddingX="1">
+    <FormControl paddingX="1" isDisabled={disabled} marginBottom="8px">
       <InputGroup
         size="sm"
         variant="flushed"
@@ -121,6 +195,9 @@ function AddCollaboratorForm({ docID, ...props }: any) {
             onChange={(e) => {
               setRole(e.target.value);
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.preventDefault();
+            }}
           >
             <option value="editor">Editor</option>
             <option value="viewer">Viewer</option>
@@ -130,7 +207,9 @@ function AddCollaboratorForm({ docID, ...props }: any) {
       <Box mt="-5px">
         <FormErrorMessage fontSize="xs"></FormErrorMessage>
         <FormHelperText fontSize="xs">
-          Press enter to add a collaborator.
+          {disabled
+            ? "You must be the document owner to add collaborators."
+            : "Press enter to add a collaborator."}
         </FormHelperText>
       </Box>
     </FormControl>
@@ -141,6 +220,9 @@ function DocShareButton({ docID, ...props }: any) {
   const auth = useProvideAuth();
   const [docRoles, setDocRoles] = useState<any>();
   const [isOwner, setIsOwner] = useState<boolean>(false);
+  const [clipboardLabel, setClipboardLabel] = useState<String>(
+    "Copies document link to clipboard"
+  );
 
   // Effect to get user roles.
   useEffect(() => {
@@ -206,12 +288,29 @@ function DocShareButton({ docID, ...props }: any) {
                 {docRoles !== undefined &&
                   Object.keys(docRoles).map((key, i) => {
                     return (
-                      <Tr>
+                      <Tr h="10">
                         <Td>
                           <b>{docRoles[key][1]}</b>
                         </Td>
-                        <Td>{docRoles[key][2]}</Td>
-                        <Td></Td>
+                        <Td>
+                          {isOwner && docRoles[key][2] !== "Owner" ? (
+                            <EditUserRoleDropdown
+                              uid={docRoles[key][0]}
+                              role={docRoles[key][2]}
+                              docID={docID}
+                            />
+                          ) : (
+                            docRoles[key][2]
+                          )}
+                        </Td>
+                        <Td>
+                          {isOwner && docRoles[key][2] !== "Owner" && (
+                            <DeleteUserRoleButton
+                              uid={docRoles[key][0]}
+                              docID={docID}
+                            />
+                          )}
+                        </Td>
                       </Tr>
                     );
                   })}
@@ -221,9 +320,36 @@ function DocShareButton({ docID, ...props }: any) {
             <Text fontSize="xs" mt={4} mb={2} textColor="blue.500">
               <b>Add Collaborators</b>
             </Text>
-            <AddCollaboratorForm />
+            <AddCollaboratorForm
+              docID={docID}
+              docRoles={docRoles}
+              disabled={!isOwner}
+            />
           </TableContainer>
         </PopoverBody>
+        <PopoverFooter textAlign="right">
+          <Tooltip
+            label={clipboardLabel}
+            placement="bottom-start"
+            closeDelay={500}
+          >
+            <IconButton
+              aria-label="copy share link"
+              icon={<IoClipboard />}
+              colorScheme="blue"
+              size="sm"
+              variant="ghost"
+              onClick={(e) => {
+                navigator.clipboard.writeText(window.location.href);
+                setClipboardLabel("Copied!");
+                setTimeout(
+                  () => setClipboardLabel("Copies document link to clipboard"),
+                  500
+                );
+              }}
+            ></IconButton>
+          </Tooltip>
+        </PopoverFooter>
       </PopoverContent>
     </Popover>
   );

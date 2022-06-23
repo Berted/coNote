@@ -48,7 +48,8 @@ const Editor = () => {
   const [available, setAvailable] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!editorRef.current) return;
+    // TODO: Assumes editor is signed in, what if not the case?
+    if (!editorRef.current || !auth.user) return;
 
     let docRef = "debug_doc";
 
@@ -103,6 +104,7 @@ const Editor = () => {
       view,
       {
         defaultText: "",
+        userId: auth.user.uid,
       }
     );
 
