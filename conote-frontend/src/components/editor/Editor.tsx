@@ -33,7 +33,7 @@ function MarkdownPreview({ docContent, ...props }: any) {
         children={docContent}
         className="markdown-body"
         remarkPlugins={[remarkMath, remarkGfm, remarkSimpleUML]}
-        rehypePlugins={[rehypeKatex]}
+        rehypePlugins={[rehypeKatex, rehypeHighlight]}
       />
     </>
   );
