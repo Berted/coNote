@@ -19,9 +19,11 @@ import Firepad from "@lucafabbian/firepad";
 
 import { useProvideAuth } from "hooks/useAuth";
 import { compatApp } from "config/firebaseConfig";
-import { get, getDatabase, ref } from "firebase/database";
+import { set, get, getDatabase, ref, serverTimestamp } from "firebase/database";
 import firebase from "firebase/compat/app";
 import "firebase/compat/database";
+
+import EditorNavbar from "./EditorNavbar";
 
 function MarkdownPreview({ docContent, ...props }: any) {
   return (
@@ -46,7 +48,8 @@ const Editor = () => {
   const [available, setAvailable] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!editorRef.current) return;
+    // TODO: Assumes editor is signed in, what if not the case?
+    if (!editorRef.current || !auth.user) return;
 
     let docRef = "debug_doc";
 
@@ -56,7 +59,6 @@ const Editor = () => {
         get(ref(getDatabase(), docRef + "/roles/" + auth.user.uid))
           .then((snapshot) => {
             if (!snapshot.exists() || snapshot.val() === "viewer") {
-              console.log("Wut1");
               navigate("/error/403");
             }
           })
@@ -71,6 +73,8 @@ const Editor = () => {
       // TODO: Not authenticated case is not yet done.
     }
 
+    let lastSecond: number = 0;
+
     const view = new EditorView({
       extensions: [
         basicSetup,
@@ -79,6 +83,14 @@ const Editor = () => {
         EditorView.updateListener.of((update) => {
           if (update.changes) {
             setDocContent(update.state.doc.toString());
+          }
+
+          if (update.docChanged) {
+            // Only update timestamp every second.
+            if (Date.now() - lastSecond >= 1_000) {
+              set(ref(getDatabase(), docRef + "/timestamp"), serverTimestamp());
+              lastSecond = Date.now();
+            }
           }
         }),
       ],
@@ -92,6 +104,7 @@ const Editor = () => {
       view,
       {
         defaultText: "",
+        userId: auth.user.uid,
       }
     );
 
@@ -107,21 +120,11 @@ const Editor = () => {
   }, [editorRef.current, auth.user]);
 
   return (
-    <VStack padding="1">
-      <Link
-        color="gray.400"
-        _hover={{
-          textColor: "gray.600",
-          textDecoration: "underline",
-        }}
-        as={RouteLink}
-        to="/"
-      >
-        &#60; Return home.
-      </Link>
+    <Box minH="100vh">
+      <EditorNavbar docID={params.docID} />
       <HStack
-        w="100vw"
-        padding="2"
+        paddingX="2"
+        marginTop="20px"
         verticalAlign="top"
         textAlign="left"
         h="90vh"
@@ -140,7 +143,7 @@ const Editor = () => {
           </Box>
         </VStack>
       </HStack>
-    </VStack>
+    </Box>
   );
 };
 
