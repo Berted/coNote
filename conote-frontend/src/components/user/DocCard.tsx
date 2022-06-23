@@ -15,13 +15,28 @@ import {
   Button,
   Box,
   Text,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalCloseButton,
+  Tag,
+  Input,
+  TagLabel,
+  TagCloseButton,
+  FormHelperText,
+  FormErrorMessage,
+  FormControl,
 } from "@chakra-ui/react";
 import { Link as RouteLink } from "react-router-dom";
 import React from "react";
 import { useState, useEffect } from "react";
-import { IoTime, IoTrashSharp } from "react-icons/io5";
-import { getDatabase, get, ref, child, remove } from "firebase/database";
+import { IoPricetagsSharp, IoTime, IoTrashSharp } from "react-icons/io5";
+import { getDatabase, get, ref, child, remove, update, onValue, set, push, orderByValue, query, equalTo } from "firebase/database";
 import { useProvideAuth } from "hooks/useAuth";
+import { getModularInstance } from "@firebase/util";
 
 function DeleteDocButton({ docID, title, ...props }: any) {
   const auth = useProvideAuth();
@@ -75,6 +90,160 @@ function DeleteDocButton({ docID, title, ...props }: any) {
           </AlertDialogContent>
         </AlertDialogOverlay>
       </AlertDialog>
+    </>
+  );
+}
+
+function EditTagsButton({ docID, title, ...props }: any) {
+  const { user, ...auth } = useProvideAuth();
+  const tagsRef = child(ref(getDatabase(), `docs/${docID}`), "tags");
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [tags, setTags] = useState<Object | undefined>(undefined);
+  const [input, setInput] = useState("");
+  const [tagError, setTagError] = useState("");
+
+  useEffect(() => {
+    if (!user) return;
+    const unsubscribe = onValue(tagsRef,
+      snapshot => setTags(
+        snapshot.exists() ? snapshot.val() :
+          undefined),
+      (e) => {
+        // TODO: Alert notification?
+        console.log("Tags fetch error: " + e);
+      }
+    );
+    return () => {
+      unsubscribe();
+    };
+  }, [user]);
+
+  const findTagKey = (value: string) => {
+    if (tags !== undefined) {
+      const key = Object.entries(tags)
+        .filter((val) => val[1] === value);
+      return key.length === 0 ? undefined : key[0][0];
+    }
+    return undefined;
+  };
+
+  const handleTagCreate = (value: string) => {
+    if (!user) return;
+    push(tagsRef, value);
+  };
+
+  const handleTagDelete = async (value: string) => {
+    if (!user) return;
+    let key = findTagKey(value);
+    if (key !== undefined) {
+      remove(child(tagsRef, key))
+        .catch(e => {
+          // TODO: Alert notification?
+          console.log("Tags fetch error: " + e);
+        });
+    }
+  };
+
+  return (
+    <>
+      <IconButton
+        textColor="blue.500"
+        colorScheme="telegram"
+        icon={<IoPricetagsSharp />}
+        aria-label={"Edit tags for note '" + title + "'"}
+        size="md"
+        variant="ghost"
+        onClick={() => {
+          setInput("");
+          setTagError("");
+          onOpen();
+        }}
+      />
+
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>
+            Edit tags
+            <ModalCloseButton />
+          </ModalHeader>
+          <ModalBody>
+            {tags !== undefined && Object.values(tags).map(tag => {
+              return (
+                <Tag>
+                  <TagLabel>{tag}</TagLabel>
+                  <TagCloseButton onClick={() => handleTagDelete(tag)} />
+                </Tag>
+              );
+            })}
+            <FormControl isInvalid={tagError.length !== 0}>
+              <Input
+                autoFocus
+                placeholder="Type new tags here..."
+                value={input}
+                onChange={({ target: { value } }) => {
+                  value = value.replaceAll(',', '').trim();
+                  setInput(value);
+                }}
+                onKeyDown={(e) => {
+                  let { key, currentTarget: { value } } = e;
+                  value = value.replaceAll(',', '').trim();
+                  switch (key) {
+                    case 'Tab':
+                    case 'Enter':
+                    case ',':
+                      e.preventDefault();
+                      if (value.length === 0) {
+                        setTagError("Empty tag");
+                      } else if (findTagKey(value) !== undefined) {
+                        setTagError("Tag already exists");
+                      } else {
+                        setInput("");
+                        setTagError("");
+                        handleTagCreate(value);
+                      }
+                      break;
+                    case 'Backspace':
+                      if (value.length === 0) {
+                        e.preventDefault();
+                        if (tags === undefined) {
+                          setTagError("No tags to delete");
+                        } else {
+                          let lastTag = Object.values(tags).pop();
+                          handleTagDelete(lastTag);
+                          setInput(lastTag);
+                          setTagError("");
+                        }
+                      }
+                      break;
+                    default:
+                      setTagError("");
+                      break;
+                  }
+                }}
+                variant="outline"
+              />
+              {tagError.length === 0 ? (
+                <FormHelperText>
+                  Press Enter key to add tag
+                </FormHelperText>
+              ) : (
+                <FormErrorMessage>
+                  {tagError}
+                </FormErrorMessage>
+              )}
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" onClick={onClose}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </>
   );
 }
@@ -187,6 +356,7 @@ export default function DocCard({ docID, ...props }: any) {
 
       <Flex w="vw" mt="10px" mr="-5px" flexDirection="row-reverse">
         <DeleteDocButton docID={docID} title={title} />
+        <EditTagsButton docID={docID} title={title} />
       </Flex>
     </LinkBox>
   );
