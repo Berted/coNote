@@ -15,10 +15,6 @@ import {
   onAuthStateChanged,
   User,
 } from "firebase/auth";
-<<<<<<< HEAD
-
-import { getDatabase, ref, set } from "firebase/database";
-=======
 import {
   getDatabase,
   ref,
@@ -28,7 +24,6 @@ import {
   onValue,
 } from "firebase/database";
 import userType from "components/interfaces/userType";
->>>>>>> Modified useAuth.tsx to maintain userData, as well as some code refactoring
 
 // Add your Firebase credentials
 const auth = getAuth(app);
@@ -89,21 +84,13 @@ export function useProvideAuth() {
   };
   const signup = (email: string, password: string, props: any) => {
     return createUserWithEmailAndPassword(auth, email, password)
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Modified useAuth.tsx to maintain userData, as well as some code refactoring
       .then((response) => {
         setUser(response.user);
         return response.user;
       })
       .then((user) => {
         set(ref(getDatabase(), `users/${user.uid}`), {
-<<<<<<< HEAD
-          fullname: user.email,
-=======
           fullname: props.fullname,
->>>>>>> Modified useAuth.tsx to maintain userData, as well as some code refactoring
           img_url: "",
           owned_documents: {},
         }).catch((e) => {
@@ -121,29 +108,6 @@ export function useProvideAuth() {
           ).catch((e) => console.log("SetEmailData Error: " + e));
         }
       });
-<<<<<<< HEAD
-=======
-      .then(
-        (response) => {
-          setUser(response.user);
-          return response.user;
-        }
-      )
-      .then(
-        (user) => {
-          set(ref(getDatabase(), `users/${user.uid}`), {
-            fullname: props.fullname,
-            img_url: "",
-            owned_documents: {}
-          })
-            .catch((e) => {
-              console.log("Set Error: " + e); // TODO: Alert notification?
-            });
-        }
-      );
->>>>>>> Add fullname input to signup form
-=======
->>>>>>> Modified useAuth.tsx to maintain userData, as well as some code refactoring
   };
   const signout = () => {
     return signOut(auth).then(() => {
