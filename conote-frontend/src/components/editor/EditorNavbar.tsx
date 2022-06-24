@@ -44,6 +44,7 @@ import { IoShare, IoPersonRemove, IoClipboard } from "react-icons/io5";
 
 import { get, set, onValue, getDatabase, ref } from "firebase/database";
 import { useProvideAuth } from "hooks/useAuth";
+import EditorViewSlider from "./EditorViewSlider";
 
 function validateEmail(email: string) {
   return email.match(
@@ -355,9 +356,14 @@ function DocShareButton({ docID, ...props }: any) {
   );
 }
 
-export default function EditorNavbar({ docID, ...props }: any) {
+export default function EditorNavbar({
+  docID,
+  editSize,
+  setEditSize,
+  ...props
+}: any) {
   return (
-    <NavbarContainer>
+    <NavbarContainer {...props}>
       <Logo
         fontSize="24pt"
         marginBottom="-0.4em"
@@ -368,6 +374,11 @@ export default function EditorNavbar({ docID, ...props }: any) {
         as={RouteLink}
         to="/"
       />
+
+      <Flex align="center" w="40vw">
+        <EditorViewSlider editSize={editSize} setEditSize={setEditSize} />
+      </Flex>
+
       <HStack spacing="4">
         <Flex align="center">
           <DocShareButton docID={docID} />
