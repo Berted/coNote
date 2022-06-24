@@ -12,10 +12,10 @@ export default function Dashboard() {
 
   return (
     auth.user && (
-      <Box minH="100vh">
+      <Box>
         <DashboardNavbar />
 
-        <SimpleGrid minChildWidth="240px" paddingX="7" marginTop="2" gap="5">
+        <SimpleGrid minChildWidth="240px" paddingX="7" marginTop="12vh" gap="5">
           {userData !== undefined &&
             Object.keys(userData.owned_documents).map((item) => {
               return <DocCard key={'doc-card-' + item} docID={item} />;

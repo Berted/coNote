@@ -37,7 +37,20 @@ import { Link as RouteLink } from "react-router-dom";
 import React from "react";
 import { useState, useEffect } from "react";
 import { IoPricetagsSharp, IoTime, IoTrashSharp } from "react-icons/io5";
-import { getDatabase, get, ref, child, remove, onValue, push, orderByValue, query, equalTo } from "firebase/database";
+import {
+  getDatabase,
+  get,
+  ref,
+  child,
+  remove,
+  update,
+  onValue,
+  set,
+  push,
+  orderByValue,
+  query,
+  equalTo,
+} from "firebase/database";
 import { useProvideAuth } from "hooks/useAuth";
 
 function DeleteDocButton({ docID, title, ...props }: any) {
@@ -135,6 +148,21 @@ function EditTagsButton({ docID, title, tags, setTags, ...props }: any) {
   const [input, setInput] = useState("");
   const [tagError, setTagError] = useState("");
 
+  useEffect(() => {
+    if (!user) return;
+    const unsubscribe = onValue(
+      tagsRef,
+      (snapshot) => setTags(snapshot.exists() ? snapshot.val() : undefined),
+      (e) => {
+        // TODO: Alert notification?
+        console.log("Tags fetch error: " + e);
+      }
+    );
+    return () => {
+      unsubscribe();
+    };
+  }, [user]);
+
   const findTagKey = (value: string) => {
     let key = get(
       query(tagsRef, orderByValue(), equalTo(value)))
@@ -186,10 +214,7 @@ function EditTagsButton({ docID, title, tags, setTags, ...props }: any) {
         }}
       />
 
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-      >
+      <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
@@ -388,7 +413,7 @@ export default function DocCard({ docID, ...props }: any) {
       transition="background-color 100ms linear"
       _hover={{ bgColor: "gray.50" }}
     >
-      <LinkOverlay as={RouteLink} to={"/docs/edit/" + docID}>
+      <LinkOverlay as={RouteLink} to={"/docs/" + docID}>
         <Box
           mt="1"
           fontWeight="semibold"

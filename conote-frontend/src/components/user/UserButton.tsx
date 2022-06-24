@@ -17,39 +17,41 @@ export default function UserButton(props: any) {
   const auth = useProvideAuth();
 
   return (
-    <Popover placement="bottom-end" autoFocus={false}>
-      <PopoverTrigger>
-        <Avatar
-          bg="blue.400"
-          transition="background-color 100ms linear"
-          _hover={{
-            bg: "blue.600",
-          }}
-          role="button"
-        />
-      </PopoverTrigger>
-      <PopoverContent boxShadow="sm">
-        <PopoverArrow />
-        <PopoverHeader>
-          Hi, <b>{auth.userData === undefined ? "" : auth.userData.fullname}</b>
-          !
-        </PopoverHeader>
-        <PopoverBody>
-          <Button
-            onClick={() => {
-              auth
-                .signout()
-                .then((response: any) => navigate("/"))
-                .catch((error: any) => console.log(error));
+    auth.user && (
+      <Popover placement="bottom-end" autoFocus={false}>
+        <PopoverTrigger>
+          <Avatar
+            bg="blue.400"
+            transition="background-color 100ms linear"
+            _hover={{
+              bg: "blue.600",
             }}
-            colorScheme="blue"
-            boxShadow="base"
-            padding="0px 1.5em"
-          >
-            Logout
-          </Button>
-        </PopoverBody>
-      </PopoverContent>
-    </Popover>
+            role="button"
+          />
+        </PopoverTrigger>
+        <PopoverContent boxShadow="sm">
+          <PopoverArrow />
+          <PopoverHeader>
+            Hi,{" "}
+            <b>{auth.userData === undefined ? "" : auth.userData.fullname}</b>!
+          </PopoverHeader>
+          <PopoverBody>
+            <Button
+              onClick={() => {
+                auth
+                  .signout()
+                  .then((response: any) => navigate("/"))
+                  .catch((error: any) => console.log(error));
+              }}
+              colorScheme="blue"
+              boxShadow="base"
+              padding="0px 1.5em"
+            >
+              Logout
+            </Button>
+          </PopoverBody>
+        </PopoverContent>
+      </Popover>
+    )
   );
 }

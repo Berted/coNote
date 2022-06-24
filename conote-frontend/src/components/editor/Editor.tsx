@@ -1,149 +1,54 @@
-import { HStack, Box, VStack, Text, Link } from "@chakra-ui/react";
-import { useRef, useEffect, useState } from "react";
-import { useParams, Link as RouteLink, useNavigate } from "react-router-dom";
+import { HStack, Box, VStack, Text, Spinner } from "@chakra-ui/react";
+import { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 
-import { EditorView } from "@codemirror/view";
-import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
-import { basicSetup } from "codemirror";
-import { languages } from "@codemirror/language-data";
-
-import ReactMarkdown from "react-markdown";
-import "./github-markdown-light.css";
-import remarkMath from "remark-math";
-import remarkGfm from "remark-gfm";
-import remarkSimpleUML from "@akebifiky/remark-simple-plantuml";
-import rehypeHighlight from "rehype-highlight";
-import rehypeKatex from "rehype-katex";
-import "katex/dist/katex.min.css";
-
-import Firepad from "@lucafabbian/firepad";
-
-import { useProvideAuth } from "hooks/useAuth";
-import { compatApp } from "config/firebaseConfig";
-import { set, get, getDatabase, ref, serverTimestamp } from "firebase/database";
-import firebase from "firebase/compat/app";
 import "firebase/compat/database";
-
 import EditorNavbar from "./EditorNavbar";
-
-function MarkdownPreview({ docContent, ...props }: any) {
-  return (
-    <>
-      <ReactMarkdown
-        children={docContent}
-        className="markdown-body"
-        remarkPlugins={[remarkMath, remarkGfm, remarkSimpleUML]}
-        rehypePlugins={[rehypeKatex, rehypeHighlight]}
-      />
-    </>
-  );
-}
+import MarkdownPreview from "./MarkdownPreview";
+import useFirepad from "./useFirepad";
+import LoadingPage from "components/LoadingPage";
 
 const Editor = () => {
   const editorRef = useRef<HTMLDivElement>(null);
   const params = useParams();
-  const navigate = useNavigate();
-  const auth = useProvideAuth();
-  const [view, setView] = useState<EditorView>();
-  const [docContent, setDocContent] = useState("");
-  const [available, setAvailable] = useState<boolean>(false);
+  const { view, docContent, available, userRole } = useFirepad(
+    params.docID,
+    editorRef
+  );
+  const [editSize, setEditSize] = useState(50);
 
   useEffect(() => {
-    // TODO: Assumes editor is signed in, what if not the case?
-    if (!editorRef.current || !auth.user) return;
-
-    let docRef = "debug_doc";
-
-    if (params.docID) {
-      docRef = "docs/" + params.docID;
-      if (auth.user) {
-        get(ref(getDatabase(), docRef + "/roles/" + auth.user.uid))
-          .then((snapshot) => {
-            if (!snapshot.exists() || snapshot.val() === "viewer") {
-              navigate("/error/403");
-            }
-          })
-          .catch((e) => {
-            if (e.toString() === "Error: Permission denied")
-              navigate("/error/403");
-            else {
-              navigate("/error/" + e);
-            }
-          });
-      }
-      // TODO: Not authenticated case is not yet done.
+    if (userRole === "viewer") {
+      setEditSize(0);
     }
+  }, [userRole]);
 
-    let lastSecond: number = 0;
-
-    const view = new EditorView({
-      extensions: [
-        basicSetup,
-        markdown({ base: markdownLanguage, codeLanguages: languages }),
-        EditorView.lineWrapping,
-        EditorView.updateListener.of((update) => {
-          if (update.changes) {
-            setDocContent(update.state.doc.toString());
-          }
-
-          if (update.docChanged) {
-            // Only update timestamp every second.
-            if (Date.now() - lastSecond >= 1_000) {
-              set(ref(getDatabase(), docRef + "/timestamp"), serverTimestamp());
-              lastSecond = Date.now();
-            }
-          }
-        }),
-      ],
-      parent: editorRef.current,
-    });
-
-    setView(view);
-
-    let firepad = Firepad.fromCodeMirror6(
-      firebase.database(compatApp).ref(docRef),
-      view,
-      {
-        defaultText: "",
-        userId: auth.user.uid,
-      }
-    );
-
-    firepad.on("ready", () => {
-      setAvailable(true);
-    });
-
-    return () => {
-      view.destroy();
-      setView(undefined);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editorRef.current, auth.user]);
-
+  /* TODO: Crazy hack solution in terms of top position and calc(100vh - 73px) to get the editor dimensions exactly right.
+  Can't wait for this to break in the future
+  */
   return (
-    <Box minH="100vh">
-      <EditorNavbar docID={params.docID} />
-      <HStack
-        paddingX="2"
-        marginTop="20px"
-        verticalAlign="top"
-        textAlign="left"
-        h="90vh"
-      >
-        <VStack w="50%" h="100%">
-          <Text>Editor:</Text>
-          <Box w="100%" borderWidth="1px" borderRadius="md" verticalAlign="top">
-            <div ref={editorRef} hidden={!available} />
-            <Text>{available ? "" : "Editor is loading..."}</Text>
+    <Box maxH="100vh">
+      <EditorNavbar
+        docID={params.docID}
+        editSize={editSize}
+        setEditSize={setEditSize}
+      />
+      <HStack verticalAlign="top" textAlign="left" hidden={!available}>
+        <VStack w={editSize + "%"} position="fixed" top="73px">
+          <Box w="100%" borderRightWidth="1px" verticalAlign="top">
+            <Box ref={editorRef} />
           </Box>
         </VStack>
-        <VStack w="50%" h="100%">
-          <Text>Preview:</Text>
-          <Box w="100%" borderWidth="1px" borderRadius="md" verticalAlign="top">
+        <VStack w={editSize + "%"}>
+          <Box w="100%" verticalAlign="top"></Box>
+        </VStack>
+        <VStack w={100 - editSize + "%"} h="100%">
+          <Box w="100%" verticalAlign="top" mt="50">
             <MarkdownPreview docContent={docContent} />
           </Box>
         </VStack>
       </HStack>
+      {!available && <LoadingPage mt="45vh" msg="Editor loading..." />}
     </Box>
   );
 };
