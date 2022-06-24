@@ -16,8 +16,9 @@ export default function UserButton(props: any) {
   const navigate = useNavigate();
   const auth = useProvideAuth();
 
-  return (
-    auth.user && (
+  if (!auth.user) return <></>;
+  else {
+    return (
       <Popover placement="bottom-end" autoFocus={false}>
         <PopoverTrigger>
           <Avatar
@@ -52,6 +53,6 @@ export default function UserButton(props: any) {
           </PopoverBody>
         </PopoverContent>
       </Popover>
-    )
-  );
+    );
+  }
 }

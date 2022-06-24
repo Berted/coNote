@@ -10,20 +10,21 @@ import DocCard from "./DocCard";
 export default function Dashboard() {
   const { userData, ...auth } = useProvideAuth();
 
-  return (
-    auth.user && (
+  if (!auth.user) return <></>;
+  else {
+    return (
       <Box>
         <DashboardNavbar />
 
         <SimpleGrid minChildWidth="240px" paddingX="7" marginTop="12vh" gap="5">
           {userData !== undefined &&
             Object.keys(userData.owned_documents).map((item) => {
-              return <DocCard key={'doc-card-' + item} docID={item} />;
+              return <DocCard key={"doc-card-" + item} docID={item} />;
             })}
         </SimpleGrid>
       </Box>
-    )
-  );
+    );
+  }
 }
 
 /*

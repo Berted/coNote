@@ -1,6 +1,6 @@
 import {
+  Checkbox,
   FormControl,
-  FormLabel,
   FormHelperText,
   Popover,
   PopoverTrigger,
@@ -9,8 +9,6 @@ import {
   PopoverBody,
   PopoverFooter,
   PopoverArrow,
-  PopoverCloseButton,
-  PopoverAnchor,
   HStack,
   Heading,
   Flex,
@@ -22,7 +20,6 @@ import {
   Table,
   Thead,
   Tbody,
-  Tfoot,
   Tooltip,
   Tr,
   Th,
@@ -32,7 +29,6 @@ import {
   FormErrorMessage,
   Box,
   useToast,
-  Toast,
 } from "@chakra-ui/react";
 
 import { useEffect, useState } from "react";
@@ -217,6 +213,101 @@ function AddCollaboratorForm({ docID, docRoles, disabled, ...props }: any) {
   );
 }
 
+function UserRoleTable({ docID, docRoles, isOwner, ...props }: any) {
+  return (
+    <TableContainer>
+      <Table size="sm">
+        <Thead>
+          <Th>User</Th>
+          <Th>Role</Th>
+          <Th></Th>
+        </Thead>
+        <Tbody>
+          {docRoles !== undefined &&
+            Object.keys(docRoles).map((key, i) => {
+              return (
+                <Tr h="10">
+                  <Td>
+                    <b>{docRoles[key][1]}</b>
+                  </Td>
+                  <Td>
+                    {isOwner && docRoles[key][2] !== "Owner" ? (
+                      <EditUserRoleDropdown
+                        uid={docRoles[key][0]}
+                        role={docRoles[key][2]}
+                        docID={docID}
+                      />
+                    ) : (
+                      docRoles[key][2]
+                    )}
+                  </Td>
+                  <Td>
+                    {isOwner && docRoles[key][2] !== "Owner" && (
+                      <DeleteUserRoleButton
+                        uid={docRoles[key][0]}
+                        docID={docID}
+                      />
+                    )}
+                  </Td>
+                </Tr>
+              );
+            })}
+        </Tbody>
+      </Table>
+    </TableContainer>
+  );
+}
+
+function PublicViewCheckbox({ docID, isOwner, ...props }: any) {
+  const [isPublic, setIsPublic] = useState(false);
+  const auth = useProvideAuth();
+  const toast = useToast();
+
+  useEffect(() => {
+    const unsub = onValue(
+      ref(getDatabase(), `docs/${docID}/public`),
+      (snapshot) => {
+        if (snapshot.val() === true) setIsPublic(true);
+        else setIsPublic(false);
+      },
+      (e) => {
+        toast({
+          title: "Error",
+          description: "Error getting document public status: " + e,
+          status: "error",
+          duration: 5_000,
+          isClosable: true,
+        });
+      }
+    );
+    return () => unsub();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.user, docID]);
+
+  return (
+    <Checkbox
+      size="sm"
+      disabled={!isOwner}
+      checked={isPublic}
+      onChange={(e) => {
+        set(ref(getDatabase(), `docs/${docID}/public`), e.target.checked).catch(
+          (e) => {
+            toast({
+              title: "Error",
+              description: "Error setting document public status: " + e,
+              status: "error",
+              duration: 5_000,
+              isClosable: true,
+            });
+          }
+        );
+      }}
+    >
+      Allow anyone with a link to view this document.
+    </Checkbox>
+  );
+}
+
 function DocShareButton({ docID, ...props }: any) {
   const auth = useProvideAuth();
   const [docRoles, setDocRoles] = useState<any>();
@@ -278,55 +369,20 @@ function DocShareButton({ docID, ...props }: any) {
           <Text fontSize="xs" mb={1} textColor="blue.500">
             <b>Collaborators</b>
           </Text>
-          <TableContainer>
-            <Table size="sm">
-              <Thead>
-                <Th>User</Th>
-                <Th>Role</Th>
-                <Th></Th>
-              </Thead>
-              <Tbody>
-                {docRoles !== undefined &&
-                  Object.keys(docRoles).map((key, i) => {
-                    return (
-                      <Tr h="10">
-                        <Td>
-                          <b>{docRoles[key][1]}</b>
-                        </Td>
-                        <Td>
-                          {isOwner && docRoles[key][2] !== "Owner" ? (
-                            <EditUserRoleDropdown
-                              uid={docRoles[key][0]}
-                              role={docRoles[key][2]}
-                              docID={docID}
-                            />
-                          ) : (
-                            docRoles[key][2]
-                          )}
-                        </Td>
-                        <Td>
-                          {isOwner && docRoles[key][2] !== "Owner" && (
-                            <DeleteUserRoleButton
-                              uid={docRoles[key][0]}
-                              docID={docID}
-                            />
-                          )}
-                        </Td>
-                      </Tr>
-                    );
-                  })}
-              </Tbody>
-            </Table>
+          <UserRoleTable docID={docID} docRoles={docRoles} isOwner={isOwner} />
+          <Text fontSize="xs" mt={4} mb={2} textColor="blue.500">
+            <b>Add Collaborators</b>
+          </Text>
+          <AddCollaboratorForm
+            docID={docID}
+            docRoles={docRoles}
+            disabled={!isOwner}
+          />
 
-            <Text fontSize="xs" mt={4} mb={2} textColor="blue.500">
-              <b>Add Collaborators</b>
-            </Text>
-            <AddCollaboratorForm
-              docID={docID}
-              docRoles={docRoles}
-              disabled={!isOwner}
-            />
-          </TableContainer>
+          <Text fontSize="xs" mt={4} mb={2} textColor="blue.500">
+            <b>Additional Settings</b>
+          </Text>
+          <PublicViewCheckbox docID={docID} isOwner={isOwner} />
         </PopoverBody>
         <PopoverFooter textAlign="right">
           <Tooltip

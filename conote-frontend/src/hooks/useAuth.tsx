@@ -42,7 +42,7 @@ export const useAuth = () => {
 };
 // Provider hook that creates auth object and handles state
 export function useProvideAuth() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null | false>(null);
   const [userData, setUserData] = useState<userType | undefined>(undefined);
   // Wrap any Firebase methods we want to use making sure ...
   // ... to save the user to state.
@@ -111,7 +111,7 @@ export function useProvideAuth() {
   };
   const signout = () => {
     return signOut(auth).then(() => {
-      setUser(null);
+      setUser(false);
     });
   };
   const sendPwdResetEmail = (email: string) => {
@@ -152,7 +152,7 @@ export function useProvideAuth() {
       if (user) {
         setUser(user);
       } else {
-        setUser(null);
+        setUser(false);
       }
     });
     // Cleanup subscription on unmount

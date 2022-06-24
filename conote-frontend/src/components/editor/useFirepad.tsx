@@ -27,36 +27,45 @@ export default function useFirepad(
   const [userRole, setUserRole] = useState<String | undefined>();
 
   useEffect(() => {
-    if (!auth.user) return;
-    let docRef = "debug_doc";
+    console.log("AUTH: " + auth.user);
+    if (auth.user === null) return;
 
-    if (docID) {
-      docRef = "docs/" + docID;
-      if (auth.user) {
-        get(ref(getDatabase(), docRef + "/roles/" + auth.user.uid))
-          .then((snapshot) => {
-            if (!snapshot.exists()) {
-              navigate("/error/403");
-            } else {
-              setUserRole(snapshot.val());
-            }
-          })
-          .catch((e) => {
-            if (e.toString() === "Error: Permission denied")
-              navigate("/error/403");
-            else {
-              navigate("/error/" + e);
-            }
-          });
-      }
-      // TODO: Not authenticated case is not yet done.
-    }
+    let docRef = "debug_doc";
+    if (docID) docRef = "docs/" + docID;
+
+    get(ref(getDatabase(), docRef + "/public"))
+      .then((snap1) => {
+        if (auth.user) {
+          get(ref(getDatabase(), docRef + "/roles/" + auth.user.uid))
+            .then((snap2) => {
+              if (!snap2.exists()) {
+                if (snap1.val()) setUserRole("viewer");
+                else navigate("/error/403");
+              } else {
+                setUserRole(snap2.val());
+              }
+            })
+            .catch((e) => {
+              if (e.toString() === "Error: Permission denied")
+                navigate("/error/403");
+              else navigate("/error/" + e);
+            });
+        } else if (snap1.val()) {
+          setUserRole("viewer");
+        } else {
+          navigate("/error/403");
+        }
+      })
+      .catch((e) => {
+        if (e.toString() === "Error: Permission denied") navigate("/error/403");
+        else navigate("/error/" + e);
+      });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.user]);
 
   useEffect(() => {
-    // TODO: Assumes editor is signed in, what if not the case?
-    if (!editorRef.current || !userRole) return;
+    if (!editorRef.current || !userRole || auth.user === null) return;
 
     let docRef = "debug_doc";
     if (docID) docRef = "docs/" + docID;
@@ -93,15 +102,26 @@ export default function useFirepad(
     });
 
     setView(view);
+    let firepad;
 
-    let firepad = Firepad.fromCodeMirror6(
-      firebase.database(compatApp).ref(docRef),
-      view,
-      {
-        defaultText: "",
-        userId: auth?.user ? auth.user.uid : undefined,
-      }
-    );
+    if (auth?.user) {
+      firepad = Firepad.fromCodeMirror6(
+        firebase.database(compatApp).ref(docRef),
+        view,
+        {
+          defaultText: "",
+          userId: auth.user.uid,
+        }
+      );
+    } else {
+      firepad = Firepad.fromCodeMirror6(
+        firebase.database(compatApp).ref(docRef),
+        view,
+        {
+          defaultText: "",
+        }
+      );
+    }
 
     firepad.on("ready", () => {
       setAvailable(true);
