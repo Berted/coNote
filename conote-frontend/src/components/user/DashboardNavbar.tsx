@@ -13,6 +13,18 @@ import {
   FormLabel,
   Input,
   useDisclosure,
+  VStack,
+  Container,
+  Drawer,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerBody,
+  DrawerHeader,
+  FormHelperText,
+  FormErrorMessage,
+  Select,
+  Box,
+  Stack,
 } from "@chakra-ui/react";
 
 import UserButton from "./UserButton";
@@ -22,7 +34,7 @@ import { useProvideAuth } from "hooks/useAuth";
 
 import NavbarContainer from "components/NavbarContainer";
 import Logo from "components/Logo";
-import { IoCreateSharp } from "react-icons/io5";
+import { IoCreateSharp, IoFilterSharp } from "react-icons/io5";
 import {
   set,
   ref,
@@ -30,6 +42,7 @@ import {
   push,
   serverTimestamp,
 } from "firebase/database";
+import ColorfulTag from "./ColorfulTag";
 
 function NewDocButton(props: any) {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -92,6 +105,125 @@ function NewDocButton(props: any) {
   );
 }
 
+function SortFilterDrawer({ tags, setTags, filterOption, setFilterOption, sorter, setSorter, ...props }: any) {
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  const [input, setInput] = useState("");
+  const [tagError, setTagError] = useState("");
+
+  const handleTagCreate = (value: string) => {
+    setTags([...tags, value]);
+  };
+
+  const handleTagDelete = (value: string) => {
+    setTags((tags as string[]).filter(x => x !== value));
+  };
+
+  return (
+    <>
+      <Button leftIcon={<IoFilterSharp />} colorScheme="gray" onClick={onOpen}>
+        {'Sort & Filter'}
+      </Button>
+      <Drawer onClose={onClose} isOpen={isOpen}>
+        <DrawerOverlay />
+        <DrawerContent flexDirection='column'>
+          <DrawerHeader>
+            {'Sort & Filter'}
+          </DrawerHeader>
+          <DrawerBody>
+            <Stack spacing='24px'>
+              <Box>
+                <FormLabel fontWeight='bold'>Sort</FormLabel>
+                <Select onChange={e => setSorter(e.target.value)} >
+                  <option value='default'>None</option>
+                  <option value='title'>Title</option>
+                  <option value='time'>Most Recent</option>
+                </Select>
+              </Box>
+              <Box>
+                <FormLabel fontWeight='bold'>Filter</FormLabel>
+                <VStack>
+                  <Container>
+                    {tags !== undefined && Object.values(tags).map((tag: any) => {
+                      return (<ColorfulTag
+                        key={'filter-tag-' + tag}
+                        tag={tag}
+                        handleTagDelete={handleTagDelete}
+                      />)
+                    })}
+                  </Container>
+                  <FormControl isInvalid={tagError.length !== 0}>
+                    <Input
+                      autoFocus
+                      placeholder="Type new tags here..."
+                      value={input}
+                      onChange={({ target: { value } }) => {
+                        value = value.replaceAll(',', '').trim();
+                        setInput(value);
+                      }}
+                      onKeyDown={(e) => {
+                        let { key, currentTarget: { value } } = e;
+                        value = value.replaceAll(',', '').trim();
+                        switch (key) {
+                          case 'Tab':
+                          case 'Enter':
+                          case ',':
+                            e.preventDefault();
+                            if (value.length === 0) {
+                              setTagError("Empty tag");
+                            } else {
+                              if (tags.includes(value)) {
+                                setTagError("Tag already exists");
+                              } else {
+                                setInput("");
+                                setTagError("");
+                                handleTagCreate(value);
+                              }
+                            }
+                            break;
+                          case 'Backspace':
+                            if (value.length === 0) {
+                              e.preventDefault();
+                              if (tags.length === 0) {
+                                setTagError("No tags to delete");
+                              } else {
+                                let lastTag = Object.values(tags).pop() as string;
+                                handleTagDelete(lastTag);
+                                setInput(lastTag);
+                                setTagError("");
+                              }
+                            }
+                            break;
+                          default:
+                            setTagError("");
+                            break;
+                        }
+                      }}
+                      variant="outline"
+                    />
+                    {tagError.length === 0 ? (
+                      <FormHelperText>
+                        Press Enter key to add tag
+                      </FormHelperText>
+                    ) : (
+                      <FormErrorMessage>
+                        {tagError}
+                      </FormErrorMessage>
+                    )}
+                  </FormControl>
+                  <Select onChange={e => setFilterOption(e.target.value)}>
+                    <option value='and'>Contain all of the tags</option>
+                    <option value='or'>Contain one of the tags</option>
+                  </Select>
+                </VStack>
+              </Box>
+            </Stack>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+    </>
+  );
+}
+
 export default function DashboardNavbar(props: any) {
   return (
     <NavbarContainer>
@@ -106,6 +238,7 @@ export default function DashboardNavbar(props: any) {
         to="/"
       />
       <HStack spacing="4">
+        <SortFilterDrawer {...props} />
         <NewDocButton />
         <Flex align="center">
           <UserButton />
