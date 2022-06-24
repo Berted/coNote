@@ -18,7 +18,7 @@ export default function Dashboard() {
         <SimpleGrid minChildWidth="240px" paddingX="7" marginTop="2" gap="5">
           {userData !== undefined &&
             Object.keys(userData.owned_documents).map((item) => {
-              return <DocCard docID={item} />;
+              return <DocCard key={'doc-card-' + item} docID={item} />;
             })}
         </SimpleGrid>
       </Box>
