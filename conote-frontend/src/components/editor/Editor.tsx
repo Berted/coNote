@@ -1,4 +1,4 @@
-import { HStack, Box, VStack, Text, Spinner } from "@chakra-ui/react";
+import { HStack, Box, VStack } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
