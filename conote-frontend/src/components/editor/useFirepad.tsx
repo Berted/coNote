@@ -27,9 +27,7 @@ export default function useFirepad(
   const [userRole, setUserRole] = useState<String | undefined>();
 
   useEffect(() => {
-    // TODO: Assumes editor is signed in, what if not the case?
-    if (!editorRef.current || !auth.user) return;
-
+    if (!auth.user) return;
     let docRef = "debug_doc";
 
     if (docID) {
@@ -53,12 +51,22 @@ export default function useFirepad(
       }
       // TODO: Not authenticated case is not yet done.
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.user]);
+
+  useEffect(() => {
+    // TODO: Assumes editor is signed in, what if not the case?
+    if (!editorRef.current || !userRole) return;
+
+    let docRef = "debug_doc";
+    if (docID) docRef = "docs/" + docID;
 
     let lastSecond: number = 0;
-
+    // Remember to doc esc+tab to escape focus.
     const view = new EditorView({
       extensions: [
         basicSetup,
+        EditorView.editable.of(userRole !== "viewer"),
         keymap.of([indentWithTab]),
         markdown({ base: markdownLanguage, codeLanguages: languages }),
         EditorView.lineWrapping,
@@ -91,7 +99,7 @@ export default function useFirepad(
       view,
       {
         defaultText: "",
-        userId: auth.user.uid,
+        userId: auth?.user ? auth.user.uid : undefined,
       }
     );
 
@@ -104,7 +112,7 @@ export default function useFirepad(
       setView(undefined);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editorRef.current, auth.user]);
+  }, [editorRef.current, userRole]);
 
   return { view, docContent, available, userRole };
 }

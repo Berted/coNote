@@ -34,7 +34,20 @@ import { Link as RouteLink } from "react-router-dom";
 import React from "react";
 import { useState, useEffect } from "react";
 import { IoPricetagsSharp, IoTime, IoTrashSharp } from "react-icons/io5";
-import { getDatabase, get, ref, child, remove, update, onValue, set, push, orderByValue, query, equalTo } from "firebase/database";
+import {
+  getDatabase,
+  get,
+  ref,
+  child,
+  remove,
+  update,
+  onValue,
+  set,
+  push,
+  orderByValue,
+  query,
+  equalTo,
+} from "firebase/database";
 import { useProvideAuth } from "hooks/useAuth";
 import { getModularInstance } from "@firebase/util";
 
@@ -104,10 +117,9 @@ function EditTagsButton({ docID, title, ...props }: any) {
 
   useEffect(() => {
     if (!user) return;
-    const unsubscribe = onValue(tagsRef,
-      snapshot => setTags(
-        snapshot.exists() ? snapshot.val() :
-          undefined),
+    const unsubscribe = onValue(
+      tagsRef,
+      (snapshot) => setTags(snapshot.exists() ? snapshot.val() : undefined),
       (e) => {
         // TODO: Alert notification?
         console.log("Tags fetch error: " + e);
@@ -120,8 +132,7 @@ function EditTagsButton({ docID, title, ...props }: any) {
 
   const findTagKey = (value: string) => {
     if (tags !== undefined) {
-      const key = Object.entries(tags)
-        .filter((val) => val[1] === value);
+      const key = Object.entries(tags).filter((val) => val[1] === value);
       return key.length === 0 ? undefined : key[0][0];
     }
     return undefined;
@@ -136,11 +147,10 @@ function EditTagsButton({ docID, title, ...props }: any) {
     if (!user) return;
     let key = findTagKey(value);
     if (key !== undefined) {
-      remove(child(tagsRef, key))
-        .catch(e => {
-          // TODO: Alert notification?
-          console.log("Tags fetch error: " + e);
-        });
+      remove(child(tagsRef, key)).catch((e) => {
+        // TODO: Alert notification?
+        console.log("Tags fetch error: " + e);
+      });
     }
   };
 
@@ -160,10 +170,7 @@ function EditTagsButton({ docID, title, ...props }: any) {
         }}
       />
 
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-      >
+      <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
@@ -171,30 +178,34 @@ function EditTagsButton({ docID, title, ...props }: any) {
             <ModalCloseButton />
           </ModalHeader>
           <ModalBody>
-            {tags !== undefined && Object.values(tags).map(tag => {
-              return (
-                <Tag>
-                  <TagLabel>{tag}</TagLabel>
-                  <TagCloseButton onClick={() => handleTagDelete(tag)} />
-                </Tag>
-              );
-            })}
+            {tags !== undefined &&
+              Object.values(tags).map((tag) => {
+                return (
+                  <Tag>
+                    <TagLabel>{tag}</TagLabel>
+                    <TagCloseButton onClick={() => handleTagDelete(tag)} />
+                  </Tag>
+                );
+              })}
             <FormControl isInvalid={tagError.length !== 0}>
               <Input
                 autoFocus
                 placeholder="Type new tags here..."
                 value={input}
                 onChange={({ target: { value } }) => {
-                  value = value.replaceAll(',', '').trim();
+                  value = value.replaceAll(",", "").trim();
                   setInput(value);
                 }}
                 onKeyDown={(e) => {
-                  let { key, currentTarget: { value } } = e;
-                  value = value.replaceAll(',', '').trim();
+                  let {
+                    key,
+                    currentTarget: { value },
+                  } = e;
+                  value = value.replaceAll(",", "").trim();
                   switch (key) {
-                    case 'Tab':
-                    case 'Enter':
-                    case ',':
+                    case "Tab":
+                    case "Enter":
+                    case ",":
                       e.preventDefault();
                       if (value.length === 0) {
                         setTagError("Empty tag");
@@ -206,7 +217,7 @@ function EditTagsButton({ docID, title, ...props }: any) {
                         handleTagCreate(value);
                       }
                       break;
-                    case 'Backspace':
+                    case "Backspace":
                       if (value.length === 0) {
                         e.preventDefault();
                         if (tags === undefined) {
@@ -227,13 +238,9 @@ function EditTagsButton({ docID, title, ...props }: any) {
                 variant="outline"
               />
               {tagError.length === 0 ? (
-                <FormHelperText>
-                  Press Enter key to add tag
-                </FormHelperText>
+                <FormHelperText>Press Enter key to add tag</FormHelperText>
               ) : (
-                <FormErrorMessage>
-                  {tagError}
-                </FormErrorMessage>
+                <FormErrorMessage>{tagError}</FormErrorMessage>
               )}
             </FormControl>
           </ModalBody>
@@ -336,7 +343,7 @@ export default function DocCard({ docID, ...props }: any) {
       transition="background-color 100ms linear"
       _hover={{ bgColor: "gray.50" }}
     >
-      <LinkOverlay as={RouteLink} to={"/docs/edit/" + docID}>
+      <LinkOverlay as={RouteLink} to={"/docs/" + docID}>
         <Box
           mt="1"
           fontWeight="semibold"
