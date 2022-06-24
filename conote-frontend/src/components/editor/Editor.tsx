@@ -1,12 +1,22 @@
-import { HStack, Box, VStack, Text, Link } from "@chakra-ui/react";
+import {
+  HStack,
+  Box,
+  VStack,
+  Text,
+  Link,
+  Spinner,
+  Flex,
+} from "@chakra-ui/react";
 import { useRef, useEffect, useState } from "react";
 import { useParams, Link as RouteLink, useNavigate } from "react-router-dom";
 
-import { EditorView } from "@codemirror/view";
+import { EditorView, keymap } from "@codemirror/view";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { basicSetup } from "codemirror";
 import { languages } from "@codemirror/language-data";
+import { indentWithTab } from "@codemirror/commands";
 
+import ChakraUIRenderer from "chakra-ui-markdown-renderer";
 import ReactMarkdown from "react-markdown";
 import "./github-markdown-light.css";
 import remarkMath from "remark-math";
@@ -25,6 +35,7 @@ import firebase from "firebase/compat/app";
 import "firebase/compat/database";
 
 import EditorNavbar from "./EditorNavbar";
+import SplitPanel from "./SplitPanel";
 
 function MarkdownPreview({ docContent, ...props }: any) {
   return (
@@ -33,7 +44,10 @@ function MarkdownPreview({ docContent, ...props }: any) {
         children={docContent}
         className="markdown-body"
         remarkPlugins={[remarkMath, remarkGfm, remarkSimpleUML]}
-        rehypePlugins={[rehypeKatex, rehypeHighlight]}
+        rehypePlugins={[
+          rehypeKatex,
+          [rehypeHighlight, { ignoreMissing: true }],
+        ]}
       />
     </>
   );
@@ -79,8 +93,14 @@ const Editor = () => {
     const view = new EditorView({
       extensions: [
         basicSetup,
+        keymap.of([indentWithTab]),
         markdown({ base: markdownLanguage, codeLanguages: languages }),
         EditorView.lineWrapping,
+        EditorView.theme({
+          ".cm-content, .cm-gutter": { fontSize: "14px", minHeight: "92vh" },
+          "&": { height: "calc(100vh - 73px)" },
+          ".cm-scroller": { overflow: "auto" },
+        }),
         EditorView.updateListener.of((update) => {
           if (update.changes) {
             setDocContent(update.state.doc.toString());
@@ -120,30 +140,39 @@ const Editor = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editorRef.current, auth.user]);
 
+  /* TODO: Crazy hack solution in terms of top position and calc(100vh - 73px) to get the dimensions exactly right.
+  Seems like a problem waiting to happen in the future...
+  */
   return (
-    <Box minH="100vh">
+    <Box maxH="100vh">
       <EditorNavbar docID={params.docID} />
-      <HStack
-        paddingX="2"
-        marginTop="20px"
-        verticalAlign="top"
-        textAlign="left"
-        h="90vh"
-      >
-        <VStack w="50%" h="100%">
-          <Text>Editor:</Text>
-          <Box w="100%" borderWidth="1px" borderRadius="md" verticalAlign="top">
-            <div ref={editorRef} hidden={!available} />
-            <Text>{available ? "" : "Editor is loading..."}</Text>
+      <HStack verticalAlign="top" textAlign="left" hidden={!available}>
+        <VStack w="50%" position="fixed" top="73px">
+          <Box w="100%" borderRightWidth="1px" verticalAlign="top">
+            <Box ref={editorRef} />
           </Box>
         </VStack>
+        <VStack w="50%">
+          <Box w="100%" verticalAlign="top"></Box>
+        </VStack>
         <VStack w="50%" h="100%">
-          <Text>Preview:</Text>
-          <Box w="100%" borderWidth="1px" borderRadius="md" verticalAlign="top">
+          <Box w="100%" verticalAlign="top" mt="50">
             <MarkdownPreview docContent={docContent} />
           </Box>
         </VStack>
       </HStack>
+      {!available && (
+        <VStack mt="45vh" spacing="3">
+          <Spinner
+            size="xl"
+            thickness="4px"
+            speed="0.65s"
+            emptyColor="gray.200"
+            color="blue.500"
+          />
+          <Text fontSize="xl">Loading editor...</Text>
+        </VStack>
+      )}
     </Box>
   );
 };

@@ -343,7 +343,7 @@ function DocShareButton({ docID, ...props }: any) {
                 navigator.clipboard.writeText(window.location.href);
                 setClipboardLabel("Copied!");
                 setTimeout(
-                  () => setClipboardLabel("Copies document link to clipboard"),
+                  () => setClipboardLabel("Copy document link to clipboard."),
                   500
                 );
               }}

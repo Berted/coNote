@@ -9,8 +9,11 @@ export default function NavbarContainer({ children, ...props }: Props) {
   return (
     <Flex
       as="nav"
+      zIndex="1"
       align="center"
       justify="space-between"
+      position="fixed"
+      top="0"
       wrap="wrap"
       w="100%"
       mb={8}
@@ -18,7 +21,7 @@ export default function NavbarContainer({ children, ...props }: Props) {
       px={{ base: 5 }}
       borderBottomWidth={1}
       borderStyle={"solid"}
-      bg={["primary.500", "primary.500", "transparent", "transparent"]}
+      bg="white"
       {...props}
     >
       {children}
