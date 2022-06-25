@@ -22,10 +22,7 @@ import {
   ModalBody,
   ModalFooter,
   ModalCloseButton,
-  Tag,
   Input,
-  TagLabel,
-  TagCloseButton,
   FormHelperText,
   FormErrorMessage,
   FormControl,
@@ -52,6 +49,7 @@ import {
   equalTo,
 } from "firebase/database";
 import { useProvideAuth } from "hooks/useAuth";
+import ColorfulTag from "./ColorfulTag";
 
 function DeleteDocButton({ docID, title, ...props }: any) {
   const auth = useProvideAuth();
@@ -106,38 +104,6 @@ function DeleteDocButton({ docID, title, ...props }: any) {
         </AlertDialogOverlay>
       </AlertDialog>
     </>
-  );
-}
-
-function ColorfulTag({ tag, handleTagDelete, ...props }: any) {
-  const colors = [
-    "gray",
-    "red",
-    "orange",
-    "yellow",
-    "green",
-    "teal",
-    "blue",
-    "cyan",
-    "purple",
-    "pink",
-    "whatsapp",
-  ];
-
-  let hash = 0;
-  for (var i = 0; i < tag.length; i++) {
-    hash = (((hash << 5) + hash) + tag.charCodeAt(i)) % 1000000007;
-  }
-
-  return (
-    <Tag
-      m={0.5}
-      colorScheme={colors[hash % colors.length]}
-      {...props}
-    >
-      <TagLabel>{tag}</TagLabel>
-      {handleTagDelete !== undefined && (<TagCloseButton onClick={() => handleTagDelete(tag)} />)}
-    </Tag>
   );
 }
 
@@ -243,7 +209,7 @@ function EditTagsButton({ docID, title, tags, setTags, ...props }: any) {
                   }}
                   onKeyDown={(e) => {
                     let { key, currentTarget: { value } } = e;
-                    value = value.replaceAll(',', '').trim();
+                    value = value.replaceAll(',', '').trim().toLowerCase();
                     switch (key) {
                       case 'Tab':
                       case 'Enter':
@@ -360,25 +326,39 @@ export default function DocCard({ docID, ...props }: any) {
   const [timestamp, setTimestamp] = useState<number | undefined>(undefined);
   const [tags, setTags] = useState<Object | undefined>(undefined);
 
-  // TOTHINK: Data is not updated in realtime. Perhaps should be reconsidered?
+  // Subscribe to document title
   useEffect(() => {
-    const docRef = ref(getDatabase(), `docs/${docID}`);
-    get(child(docRef, `title`))
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          setTitle(snapshot.val());
-        }
-      })
-      .catch((e) => console.log("Title Error: " + e)); // TODO: Alert notification?
+    if (!auth.user) return;
+    const unsubscribe = onValue(ref(getDatabase(), `docs/${docID}/title`),
+      snapshot => setTitle(
+        snapshot.exists() ? snapshot.val() :
+          undefined),
+      (e) => {
+        // TODO: Alert notification?
+        console.log("Title Error: " + e);
+      }
+    );
+    return () => {
+      unsubscribe();
+    };
+  }, [docID, auth.user]);
 
-    get(child(docRef, `timestamp`))
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          setTimestamp(snapshot.val());
-        }
-      })
-      .catch((e) => console.log("Timestamp Error: " + e)); // TODO: Alert notification?
-  }, [docID]);
+  // Subscribe to document timestamp
+  useEffect(() => {
+    if (!auth.user) return;
+    const unsubscribe = onValue(ref(getDatabase(), `docs/${docID}/timestamp`),
+      snapshot => setTimestamp(
+        snapshot.exists() ? snapshot.val() :
+          undefined),
+      (e) => {
+        // TODO: Alert notification?
+        console.log("Timestamp Error: " + e);
+      }
+    );
+    return () => {
+      unsubscribe();
+    };
+  }, [docID, auth.user]);
 
   // Subscribe to document tags
   useEffect(() => {
