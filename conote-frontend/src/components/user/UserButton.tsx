@@ -19,7 +19,7 @@ export default function UserButton(props: any) {
   if (!auth.user) return <></>;
   else {
     return (
-      <Popover placement="bottom-end" autoFocus={false}>
+      <Popover placement="bottom-end" autoFocus={true}>
         <PopoverTrigger>
           <Avatar
             bg="blue.400"

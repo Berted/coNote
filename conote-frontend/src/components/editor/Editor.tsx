@@ -29,6 +29,7 @@ const Editor = () => {
   return (
     <Box maxH="100vh">
       <EditorNavbar
+        docContent={docContent}
         docID={params.docID}
         editSize={editSize}
         setEditSize={setEditSize}

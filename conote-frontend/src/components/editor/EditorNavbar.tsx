@@ -36,11 +36,12 @@ import { Link as RouteLink } from "react-router-dom";
 import NavbarContainer from "components/NavbarContainer";
 import Logo from "components/Logo";
 import UserButton from "components/user/UserButton";
-import { IoShare, IoPersonRemove, IoClipboard } from "react-icons/io5";
+import { IoShareSocial, IoPersonRemove, IoClipboard } from "react-icons/io5";
 
 import { get, set, onValue, getDatabase, ref } from "firebase/database";
 import { useProvideAuth } from "hooks/useAuth";
 import EditorViewSlider from "./EditorViewSlider";
+import ExportButton from "./ExportButton";
 
 function validateEmail(email: string) {
   return email.match(
@@ -351,12 +352,13 @@ function DocShareButton({ docID, ...props }: any) {
   }, [auth.user, docID]);
 
   return (
-    <Popover placement="bottom-end">
+    <Popover placement="bottom-end" autoFocus={true}>
       <PopoverTrigger>
         <IconButton
           colorScheme="blue"
           variant="ghost"
-          icon={<IoShare />}
+          fontSize="lg"
+          icon={<IoShareSocial />}
           aria-label="share document"
         />
       </PopoverTrigger>
@@ -414,6 +416,7 @@ function DocShareButton({ docID, ...props }: any) {
 
 export default function EditorNavbar({
   docID,
+  docContent,
   editSize,
   setEditSize,
   ...props
@@ -436,9 +439,10 @@ export default function EditorNavbar({
       </Flex>
 
       <HStack spacing="4">
-        <Flex align="center">
+        <HStack align="center" spacing="1">
+          <ExportButton docContent={docContent} />
           <DocShareButton docID={docID} />
-        </Flex>
+        </HStack>
         <UserButton />
       </HStack>
     </NavbarContainer>
