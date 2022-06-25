@@ -62,7 +62,7 @@ function App() {
               </RedirectRoute>
             }
           />
-          <Route path="docs/edit/:docID" element={<Editor />} />
+          <Route path="docs/:docID" element={<Editor />} />
           <Route path="error/:errorID" element={<ErrorPage />} />
           <Route
             path="*"

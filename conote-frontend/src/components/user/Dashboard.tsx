@@ -106,9 +106,10 @@ export default function Dashboard() {
       .catch(e => console.log("Document display error: " + e));
   }, [userData, tagsFilter, tagsFilterOption, sorter]);
 
-  return (
-    auth.user && (
-      <Box minH="100vh">
+  if (!auth.user) return <></>;
+  else {
+    return (
+      <Box>
         <DashboardNavbar
           tags={tagsFilter}
           setTags={setTagsFilter}
@@ -117,15 +118,16 @@ export default function Dashboard() {
           sorter={sorter}
           setSorter={setSorter}
         />
-        <SimpleGrid minChildWidth="240px" paddingX="7" marginTop="2" gap="5">
+        
+        <SimpleGrid minChildWidth="240px" paddingX="7" marginTop="12vh" gap="5">
           {documents !== undefined &&
             Object.values(documents).map((item) => {
               return (<DocCard key={'doc-card-' + item} docID={item} />);
             })}
         </SimpleGrid>
       </Box>
-    )
-  );
+    );
+  }
 }
 
 /*
