@@ -13,7 +13,7 @@ export default function Dashboard() {
   const { userData, ...auth } = useProvideAuth();
   const [tagsFilter, setTagsFilter] = useState<string[]>([]);
   const [tagsFilterOption, setTagsFilterOption] = useState('and');
-  const [sorter, setSorter] = useState('default');
+  const [sorter, setSorter] = useState('time');
   const [documents, setDocuments] = useState<string[] | undefined>(undefined);
 
   useEffect(() => {
@@ -71,13 +71,17 @@ export default function Dashboard() {
           return a < b ? -1 : a > b ? 1 : 0;
         };
         switch (sorter) {
-          case 'title':
+          case 'title-asc':
+          case 'title-dec':
             docs.sort((a, b) => {
               if (comparator(a[2], b[2]) !== 0) {
                 return comparator(a[2], b[2]);
               }
               return comparator(a[0], b[0]);
             });
+            if (sorter === 'title-dec') {
+              docs.reverse();
+            }
             break;
           case 'time':
             docs.sort((a, b) => {

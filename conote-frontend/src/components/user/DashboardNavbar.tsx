@@ -133,10 +133,10 @@ function SortFilterDrawer({ tags, setTags, filterOption, setFilterOption, sorter
             <Stack spacing='24px'>
               <Box>
                 <FormLabel fontWeight='bold'>Sort</FormLabel>
-                <Select onChange={e => setSorter(e.target.value)} >
-                  <option value='default'>None</option>
-                  <option value='title'>Title</option>
+                <Select value={sorter} onChange={e => setSorter(e.target.value)} >
                   <option value='time'>Most Recent</option>
+                  <option value='title-asc'>Title Ascending</option>
+                  <option value='title-dec'>Title Descending</option>
                 </Select>
               </Box>
               <Box>
@@ -162,7 +162,7 @@ function SortFilterDrawer({ tags, setTags, filterOption, setFilterOption, sorter
                       }}
                       onKeyDown={(e) => {
                         let { key, currentTarget: { value } } = e;
-                        value = value.replaceAll(',', '').trim();
+                        value = value.replaceAll(',', '').trim().toLowerCase();
                         switch (key) {
                           case 'Tab':
                           case 'Enter':
@@ -210,7 +210,7 @@ function SortFilterDrawer({ tags, setTags, filterOption, setFilterOption, sorter
                       </FormErrorMessage>
                     )}
                   </FormControl>
-                  <Select onChange={e => setFilterOption(e.target.value)}>
+                  <Select value={filterOption} onChange={e => setFilterOption(e.target.value)}>
                     <option value='and'>Contain all of the tags</option>
                     <option value='or'>Contain one of the tags</option>
                   </Select>

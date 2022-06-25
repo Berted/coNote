@@ -184,7 +184,7 @@ function EditTagsButton({ docID, title, tags, setTags, ...props }: any) {
                   }}
                   onKeyDown={(e) => {
                     let { key, currentTarget: { value } } = e;
-                    value = value.replaceAll(',', '').trim();
+                    value = value.replaceAll(',', '').trim().toLowerCase();
                     switch (key) {
                       case 'Tab':
                       case 'Enter':
