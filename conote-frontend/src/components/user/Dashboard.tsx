@@ -74,6 +74,9 @@ export default function Dashboard() {
           case 'title-asc':
           case 'title-dec':
             docs.sort((a, b) => {
+              if (comparator(a[2].toLowerCase(), b[2].toLowerCase()) !== 0) {
+                return comparator(a[2].toLowerCase(), b[2].toLowerCase());
+              }
               if (comparator(a[2], b[2]) !== 0) {
                 return comparator(a[2], b[2]);
               }
