@@ -9,6 +9,7 @@ export default function NavbarContainer({ children, ...props }: Props) {
   return (
     <Flex
       as="nav"
+      id="navbar-container"
       zIndex="1"
       align="center"
       justify="space-between"

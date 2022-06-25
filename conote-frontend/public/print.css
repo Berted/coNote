@@ -1,0 +1,7 @@
+#navbar-container {
+  display: none;
+}
+
+.markdown-body {
+  margin-top: -72px !important;
+}

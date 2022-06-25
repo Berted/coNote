@@ -17,7 +17,7 @@ export default function MarkdownPreview({ docContent, ...props }: any) {
         remarkPlugins={[remarkMath, remarkGfm, remarkSimpleUML]}
         rehypePlugins={[
           rehypeKatex,
-          [rehypeHighlight, { ignoreMissing: true }],
+          [rehypeHighlight, { ignoreMissing: true, subset: false }],
         ]}
       />
     </>
