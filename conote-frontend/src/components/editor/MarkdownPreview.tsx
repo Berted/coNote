@@ -31,6 +31,10 @@ export default function MarkdownPreview({ docContent, ...props }: any) {
           rehypeSanitize,
           rehypeSlug,
         ]}
+        linkTarget={(href, children, title) => {
+          if (/^#/.test(href)) return "_self";
+          else return "_blank";
+        }}
       />
     </>
   );
