@@ -56,9 +56,6 @@ export function useProvideAuth() {
         get(ref(getDatabase(), `users/${user.uid}`)).then((snapshot) => {
           let snapvar = snapshot.val();
           // TODO: Better solutions definitely exist, but autopopulating the fields works for now.
-          if (snapvar.email === undefined) {
-            set(ref(getDatabase(), `users/${user.uid}/email`), user.email);
-          }
           if (snapvar.fullname === undefined) {
             set(
               ref(getDatabase(), `users/${user.uid}/fullname`),
