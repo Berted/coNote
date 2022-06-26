@@ -29,11 +29,12 @@ import {
   VStack,
   Container,
   Spacer,
+  FormLabel,
 } from "@chakra-ui/react";
 import { Link as RouteLink } from "react-router-dom";
 import React from "react";
 import { useState, useEffect } from "react";
-import { IoPricetagsSharp, IoTime, IoTrashSharp } from "react-icons/io5";
+import { IoCreateSharp, IoPricetagsSharp, IoTime, IoTrashSharp } from "react-icons/io5";
 import {
   getDatabase,
   get,
@@ -107,27 +108,12 @@ function DeleteDocButton({ docID, title, ...props }: any) {
   );
 }
 
-function EditTagsButton({ docID, title, tags, setTags, ...props }: any) {
+function EditTagsButton({ docID, title, setTitle, tags, setTags, ...props }: any) {
   const { user, ...auth } = useProvideAuth();
   const tagsRef = ref(getDatabase(), `docs/${docID}/tags`);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [input, setInput] = useState("");
   const [tagError, setTagError] = useState("");
-
-  useEffect(() => {
-    if (!user) return;
-    const unsubscribe = onValue(
-      tagsRef,
-      (snapshot) => setTags(snapshot.exists() ? snapshot.val() : undefined),
-      (e) => {
-        // TODO: Alert notification?
-        console.log("Tags fetch error: " + e);
-      }
-    );
-    return () => {
-      unsubscribe();
-    };
-  }, [user]);
 
   const findTagKey = (value: string) => {
     let key = get(
@@ -169,7 +155,7 @@ function EditTagsButton({ docID, title, tags, setTags, ...props }: any) {
       <IconButton
         textColor="blue.500"
         colorScheme="telegram"
-        icon={<IoPricetagsSharp />}
+        icon={<IoCreateSharp />}
         aria-label={"Edit tags for note '" + title + "'"}
         size="md"
         variant="ghost"
@@ -184,20 +170,41 @@ function EditTagsButton({ docID, title, tags, setTags, ...props }: any) {
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
-            Edit tags
+            Edit
             <ModalCloseButton />
           </ModalHeader>
           <ModalBody>
             <VStack>
-              <Container>
-                {tags !== undefined && Object.values(tags).map((tag: any) => {
-                  return (<ColorfulTag
-                    key={docID + '-tag-' + tag}
-                    tag={tag}
-                    handleTagDelete={handleTagDelete}
-                  />)
-                })}
-              </Container>
+              <FormControl>
+                <FormLabel>
+                  Title
+                </FormLabel>
+                <Input
+                  autoFocus
+                  placeholder="Document title"
+                  value={title}
+                  onChange={({ target: { value } }) => {
+                    set(ref(getDatabase(), `docs/${docID}/title`), value).then(
+                      () => setTitle(value)
+                    ).catch(e => console.log("Set title error: " + e));
+                  }}
+                  variant="outline"
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>
+                  Tags
+                </FormLabel>
+                <Container>
+                  {tags !== undefined && Object.values(tags).map((tag: any) => {
+                    return (<ColorfulTag
+                      key={docID + '-tag-' + tag}
+                      tag={tag}
+                      handleTagDelete={handleTagDelete}
+                    />)
+                  })}
+                </Container>
+              </FormControl>
               <FormControl isInvalid={tagError.length !== 0}>
                 <Input
                   autoFocus
@@ -412,7 +419,7 @@ export default function DocCard({ docID, ...props }: any) {
       </HStack>
       <Flex w="vw" mt="10px" mr="-5px" flexDirection="row-reverse">
         <DeleteDocButton docID={docID} title={title} />
-        <EditTagsButton docID={docID} title={title} tags={tags} setTags={setTags} />
+        <EditTagsButton docID={docID} title={title} setTitle={setTitle} tags={tags} setTags={setTags} />
         <Spacer />
         <HStack
           mt="1"
