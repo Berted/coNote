@@ -7,6 +7,7 @@ import remarkSimpleUML from "@akebifiky/remark-simple-plantuml";
 import rehypeHighlight from "rehype-highlight";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 import "katex/dist/katex.min.css";
 
 export default function MarkdownPreview({ docContent, ...props }: any) {
@@ -20,6 +21,7 @@ export default function MarkdownPreview({ docContent, ...props }: any) {
           rehypeKatex,
           [rehypeHighlight, { ignoreMissing: true, subset: false }],
           rehypeRaw,
+          rehypeSanitize,
         ]}
       />
     </>
