@@ -42,6 +42,7 @@ import { get, set, onValue, getDatabase, ref } from "firebase/database";
 import { useProvideAuth } from "hooks/useAuth";
 import EditorViewSlider from "./EditorViewSlider";
 import ExportButton from "./ExportButton";
+import { AiOutlineConsoleSql } from "react-icons/ai";
 
 function validateEmail(email: string) {
   return email.match(
@@ -268,8 +269,11 @@ function PublicViewCheckbox({ docID, isOwner, ...props }: any) {
     const unsub = onValue(
       ref(getDatabase(), `docs/${docID}/public`),
       (snapshot) => {
-        if (snapshot.val() === true) setIsPublic(true);
-        else setIsPublic(false);
+        console.log("CAUGHT: " + snapshot.val() + " " + typeof snapshot.val());
+        if (snapshot.val() === true) {
+          console.log("TRIGGERED");
+          setIsPublic(true);
+        } else setIsPublic(false);
       },
       (e) => {
         toast({
@@ -289,7 +293,7 @@ function PublicViewCheckbox({ docID, isOwner, ...props }: any) {
     <Checkbox
       size="sm"
       disabled={!isOwner}
-      checked={isPublic}
+      isChecked={isPublic}
       onChange={(e) => {
         set(ref(getDatabase(), `docs/${docID}/public`), e.target.checked).catch(
           (e) => {
