@@ -19,7 +19,7 @@ export default function MarkdownPreview({ docContent, ...props }: any) {
         children={docContent}
         className="markdown-body"
         remarkPlugins={[
-          [remarkToc, { tight: true }],
+          [remarkToc, { tight: true, prefix: "user-content-" }],
           remarkMath,
           remarkGfm,
           remarkSimpleUML,
