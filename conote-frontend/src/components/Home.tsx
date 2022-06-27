@@ -57,17 +57,6 @@ export default function Home() {
           >
             What is coNote?
           </Link>
-          <Link
-            color="gray.400"
-            _hover={{
-              textColor: "gray.600",
-              textDecoration: "underline",
-            }}
-            as={RouteLink}
-            to="/editor"
-          >
-            Demo the editor.
-          </Link>
         </VStack>
       </Center>
     </Container>

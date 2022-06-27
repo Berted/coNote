@@ -53,7 +53,6 @@ function App() {
             <Route path="signup" element={<Signup />} />
             <Route path="forget_password" element={<ForgetPassword />} />
           </Route>
-          <Route path="editor" element={<Editor />} />
           <Route
             path="dashboard"
             element={
