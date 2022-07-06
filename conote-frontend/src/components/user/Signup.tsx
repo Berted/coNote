@@ -8,12 +8,13 @@ import {
   FormLabel,
   Input,
   Button,
-  useToast
+  useToast,
 } from "@chakra-ui/react";
 import { Link as RouteLink } from "react-router-dom";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProvideAuth } from "hooks/useAuth";
+import { Helmet } from "react-helmet";
 import PasswordInput from "./PasswordInput";
 
 function SignupForm(props: any) {
@@ -22,50 +23,57 @@ function SignupForm(props: any) {
   const [password, setPassword] = useState("");
 
   return (
-    <VStack
-      boxShadow="base"
-      borderRadius="md"
-      padding="7"
-      spacing="5"
-      w="70vw"
-      minW="340px"
-      maxW="lg"
-    >
-      <FormControl id="fullname">
-        <FormLabel htmlFor="fullname">Your name</FormLabel>
-        <Input
-          value={fullname}
-          onChange={(e) => setFullname(e.target.value)}
-          type="fullname"
-          placeholder="John Doe"
-        />
-      </FormControl>
-      <FormControl id="email">
-        <FormLabel htmlFor="email">Email address</FormLabel>
-        <Input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          type="email"
-          placeholder="johndoe@example.com"
-        />
-      </FormControl>
-      <FormControl id="password">
-        <FormLabel htmlFor="password">Password</FormLabel>
-        <PasswordInput
-          value={password}
-          onChange={(e: any) => setPassword(e.target.value)}
-          type="password"
-        />
-      </FormControl>
-      <Button
-        onClick={() => props.onButtonClick(email, password, { fullname: fullname })}
-        colorScheme="blue"
+    <>
+      <Helmet>
+        <title>Sign up - coNote</title>
+      </Helmet>
+      <VStack
         boxShadow="base"
-        padding="0px 1.5em"
+        borderRadius="md"
+        padding="7"
+        spacing="5"
+        w="70vw"
+        minW="340px"
+        maxW="lg"
       >
-        {props.buttonValue}
-      </Button>
-    </VStack>
+        <FormControl id="fullname">
+          <FormLabel htmlFor="fullname">Your name</FormLabel>
+          <Input
+            value={fullname}
+            onChange={(e) => setFullname(e.target.value)}
+            type="fullname"
+            placeholder="John Doe"
+          />
+        </FormControl>
+        <FormControl id="email">
+          <FormLabel htmlFor="email">Email address</FormLabel>
+          <Input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            type="email"
+            placeholder="johndoe@example.com"
+          />
+        </FormControl>
+        <FormControl id="password">
+          <FormLabel htmlFor="password">Password</FormLabel>
+          <PasswordInput
+            value={password}
+            onChange={(e: any) => setPassword(e.target.value)}
+            type="password"
+          />
+        </FormControl>
+        <Button
+          onClick={() =>
+            props.onButtonClick(email, password, { fullname: fullname })
+          }
+          colorScheme="blue"
+          boxShadow="base"
+          padding="0px 1.5em"
+        >
+          {props.buttonValue}
+        </Button>
+      </VStack>
+    </>
   );
 }
 
@@ -82,16 +90,17 @@ export default function Login() {
         </Heading>
         <SignupForm
           onButtonClick={(email: string, password: string, props: any) => {
-            authentication.signup(email, password, props)
-              .then(response => {
+            authentication
+              .signup(email, password, props)
+              .then((response) => {
                 navigate("/dashboard");
                 toast({
                   title: "Logged in!",
                   status: "success",
-                  isClosable: true
+                  isClosable: true,
                 });
               })
-              .catch(error => {
+              .catch((error) => {
                 let errorTitle = "";
                 switch (error.code) {
                   case "auth/email-already-in-use":
@@ -111,7 +120,7 @@ export default function Login() {
                 toast({
                   title: errorTitle,
                   status: "error",
-                  isClosable: true
+                  isClosable: true,
                 });
               });
           }}
