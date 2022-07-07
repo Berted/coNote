@@ -287,7 +287,9 @@ function PublicViewCheckbox({ docID, isOwner, ...props }: any) {
     const unsub = onValue(
       ref(getDatabase(), `docs/${docID}/public`),
       (snapshot) => {
+        console.log("CAUGHT: " + snapshot.val() + " " + typeof snapshot.val());
         if (snapshot.val() === true) {
+          console.log("TRIGGERED");
           setIsPublic(true);
         } else setIsPublic(false);
       },

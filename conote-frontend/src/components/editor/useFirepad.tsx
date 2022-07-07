@@ -71,7 +71,6 @@ export default function useFirepad(
     if (docID) docRef = "docs/" + docID;
 
     let lastSecond: number = 0;
-    let updatedYet: boolean = false;
     // Remember to doc esc+tab to escape focus.
     const view = new EditorView({
       extensions: [
@@ -92,12 +91,10 @@ export default function useFirepad(
 
           if (update.docChanged) {
             // Only update timestamp every second.
-            if (updatedYet && Date.now() - lastSecond >= 1_000) {
+            if (Date.now() - lastSecond >= 1_000) {
               set(ref(getDatabase(), docRef + "/timestamp"), serverTimestamp());
               lastSecond = Date.now();
             }
-            // TODO: Hacky solution to get timestamp to not update on document enter.
-            updatedYet = true;
           }
         }),
       ],
@@ -107,15 +104,12 @@ export default function useFirepad(
     setView(view);
     let firepad;
 
-    // If you modify the default text, make sure it's non-empty.
-    // Otherwise, the timestamp bug issue will be a slight issue.
-    // TODO: Add to tests.
     if (auth?.user) {
       firepad = Firepad.fromCodeMirror6(
         firebase.database(compatApp).ref(docRef),
         view,
         {
-          defaultText: "# Type your title here!",
+          defaultText: "",
           userId: auth.user.uid,
         }
       );
@@ -124,7 +118,7 @@ export default function useFirepad(
         firebase.database(compatApp).ref(docRef),
         view,
         {
-          defaultText: "# Type your title here!",
+          defaultText: "",
         }
       );
     }
