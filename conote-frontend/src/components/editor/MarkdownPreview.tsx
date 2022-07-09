@@ -1,6 +1,7 @@
 import ChakraUIRenderer from "chakra-ui-markdown-renderer";
 import ReactMarkdown from "react-markdown";
 import "./github-markdown-light.css";
+import "./anchorLink.css";
 import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
 import remarkToc from "remark-toc";
