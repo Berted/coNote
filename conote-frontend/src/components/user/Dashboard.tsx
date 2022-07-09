@@ -27,6 +27,7 @@ import { Helmet } from "react-helmet";
 
 export default function Dashboard() {
   const { userData, ...auth } = useProvideAuth();
+  const [docType, setDocType] = useState<"owned" | "shared">("owned");
   const [tagsFilter, setTagsFilter] = useState<string[]>([]);
   const [tagsFilterOption, setTagsFilterOption] = useState("and");
   const [sorter, setSorter] = useState("time");
@@ -35,7 +36,11 @@ export default function Dashboard() {
   useEffect(() => {
     if (userData === undefined) return;
     Promise.all(
-      Object.keys(userData.owned_documents).map((docID) => {
+      Object.keys(
+        (docType === "owned"
+          ? userData.owned_documents
+          : userData.shared_documents) || {}
+      ).map((docID) => {
         const docRef = ref(getDatabase(), `docs/${docID}`);
 
         let title = get(child(docRef, `title`))
@@ -128,7 +133,7 @@ export default function Dashboard() {
         setDocuments(docs.map((x) => x[0]));
       })
       .catch((e) => console.log("Document display error: " + e));
-  }, [userData, tagsFilter, tagsFilterOption, sorter]);
+  }, [userData, tagsFilter, tagsFilterOption, sorter, docType]);
 
   if (!auth.user) return <></>;
   else {
@@ -145,6 +150,7 @@ export default function Dashboard() {
             setFilterOption={setTagsFilterOption}
             sorter={sorter}
             setSorter={setSorter}
+            setDocType={setDocType}
           />
 
           <SimpleGrid
@@ -159,7 +165,7 @@ export default function Dashboard() {
               })}
           </SimpleGrid>
         </Box>
-      </>
+      </> 
     );
   }
 }

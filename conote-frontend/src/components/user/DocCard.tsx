@@ -34,7 +34,12 @@ import {
 import { Link as RouteLink } from "react-router-dom";
 import React from "react";
 import { useState, useEffect } from "react";
-import { IoCreateSharp, IoPricetagsSharp, IoTime, IoTrashSharp } from "react-icons/io5";
+import {
+  IoCreateSharp,
+  IoPricetagsSharp,
+  IoTime,
+  IoTrashSharp,
+} from "react-icons/io5";
 import {
   getDatabase,
   get,
@@ -60,12 +65,38 @@ function DeleteDocButton({ docID, title, ...props }: any) {
   const onDelete = (e: any) => {
     if (!auth.user) return;
 
-    remove(ref(getDatabase(), `docs/${docID}`));
-    remove(
-      ref(getDatabase(), `users/${auth.user.uid}/owned_documents/${docID}`)
-    ).catch((e) => {
-      console.log(docID + " delete error: " + e); //TODO: Alert Notification?
+    get(ref(getDatabase(), `docs/${docID}/roles`)).then((snapshot) => {
+      if (!auth.user) return;
+
+      let remUserDocs = [];
+
+      remUserDocs.push(
+        remove(
+          ref(getDatabase(), `users/${auth.user?.uid}/owned_documents/${docID}`)
+        )
+      );
+
+      if (snapshot.val()) {
+        for (let uid in snapshot.val()) {
+          if (snapshot.val()[uid] === "editor") {
+            remUserDocs.push(
+              remove(
+                ref(getDatabase(), `users/${uid}/shared_documents/${docID}`)
+              )
+            );
+          }
+        }
+      }
+
+      Promise.all(remUserDocs)
+        .then(() => {
+          remove(ref(getDatabase(), `docs/${docID}`));
+        })
+        .catch((e) => {
+          console.log("Document Delete Error: " + e);
+        });
     });
+
     onClose();
   };
 
@@ -108,7 +139,14 @@ function DeleteDocButton({ docID, title, ...props }: any) {
   );
 }
 
-function EditTagsButton({ docID, title, setTitle, tags, setTags, ...props }: any) {
+function EditTagsButton({
+  docID,
+  title,
+  setTitle,
+  tags,
+  setTags,
+  ...props
+}: any) {
   const { user, ...auth } = useProvideAuth();
   const tagsRef = ref(getDatabase(), `docs/${docID}/tags`);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -116,16 +154,15 @@ function EditTagsButton({ docID, title, setTitle, tags, setTags, ...props }: any
   const [tagError, setTagError] = useState("");
 
   const findTagKey = (value: string) => {
-    let key = get(
-      query(tagsRef, orderByValue(), equalTo(value)))
-      .then(snapshot => {
+    let key = get(query(tagsRef, orderByValue(), equalTo(value)))
+      .then((snapshot) => {
         if (snapshot.exists()) {
           let key = Object.keys(snapshot.val())[0];
           return key;
         }
         return undefined;
       })
-      .catch(e => {
+      .catch((e) => {
         console.log("Tags find error: " + e);
         return undefined;
       });
@@ -139,13 +176,12 @@ function EditTagsButton({ docID, title, setTitle, tags, setTags, ...props }: any
 
   const handleTagDelete = (value: string) => {
     if (!user) return;
-    findTagKey(value).then(key => {
+    findTagKey(value).then((key) => {
       if (key !== undefined) {
-        remove(child(tagsRef, key))
-          .catch(e => {
-            // TODO: Alert notification?
-            console.log("Tags delete error: " + e);
-          });
+        remove(child(tagsRef, key)).catch((e) => {
+          // TODO: Alert notification?
+          console.log("Tags delete error: " + e);
+        });
       }
     });
   };
@@ -176,33 +212,32 @@ function EditTagsButton({ docID, title, setTitle, tags, setTags, ...props }: any
           <ModalBody>
             <VStack>
               <FormControl>
-                <FormLabel>
-                  Title
-                </FormLabel>
+                <FormLabel>Title</FormLabel>
                 <Input
                   autoFocus
                   placeholder="Document title"
                   value={title}
                   onChange={({ target: { value } }) => {
-                    set(ref(getDatabase(), `docs/${docID}/title`), value).then(
-                      () => setTitle(value)
-                    ).catch(e => console.log("Set title error: " + e));
+                    set(ref(getDatabase(), `docs/${docID}/title`), value)
+                      .then(() => setTitle(value))
+                      .catch((e) => console.log("Set title error: " + e));
                   }}
                   variant="outline"
                 />
               </FormControl>
               <FormControl>
-                <FormLabel>
-                  Tags
-                </FormLabel>
+                <FormLabel>Tags</FormLabel>
                 <Container>
-                  {tags !== undefined && Object.values(tags).map((tag: any) => {
-                    return (<ColorfulTag
-                      key={docID + '-tag-' + tag}
-                      tag={tag}
-                      handleTagDelete={handleTagDelete}
-                    />)
-                  })}
+                  {tags !== undefined &&
+                    Object.values(tags).map((tag: any) => {
+                      return (
+                        <ColorfulTag
+                          key={docID + "-tag-" + tag}
+                          tag={tag}
+                          handleTagDelete={handleTagDelete}
+                        />
+                      );
+                    })}
                 </Container>
               </FormControl>
               <FormControl isInvalid={tagError.length !== 0}>
@@ -211,21 +246,24 @@ function EditTagsButton({ docID, title, setTitle, tags, setTags, ...props }: any
                   placeholder="Type new tags here..."
                   value={input}
                   onChange={({ target: { value } }) => {
-                    value = value.replaceAll(',', '').trim();
+                    value = value.replaceAll(",", "").trim();
                     setInput(value);
                   }}
                   onKeyDown={(e) => {
-                    let { key, currentTarget: { value } } = e;
-                    value = value.replaceAll(',', '').trim().toLowerCase();
+                    let {
+                      key,
+                      currentTarget: { value },
+                    } = e;
+                    value = value.replaceAll(",", "").trim().toLowerCase();
                     switch (key) {
-                      case 'Tab':
-                      case 'Enter':
-                      case ',':
+                      case "Tab":
+                      case "Enter":
+                      case ",":
                         e.preventDefault();
                         if (value.length === 0) {
                           setTagError("Empty tag");
                         } else {
-                          findTagKey(value).then(key => {
+                          findTagKey(value).then((key) => {
                             if (key !== undefined) {
                               setTagError("Tag already exists");
                             } else {
@@ -233,10 +271,10 @@ function EditTagsButton({ docID, title, setTitle, tags, setTags, ...props }: any
                               setTagError("");
                               handleTagCreate(value);
                             }
-                          })
+                          });
                         }
                         break;
-                      case 'Backspace':
+                      case "Backspace":
                         if (value.length === 0) {
                           e.preventDefault();
                           if (tags === undefined) {
@@ -257,13 +295,9 @@ function EditTagsButton({ docID, title, setTitle, tags, setTags, ...props }: any
                   variant="outline"
                 />
                 {tagError.length === 0 ? (
-                  <FormHelperText>
-                    Press Enter key to add tag
-                  </FormHelperText>
+                  <FormHelperText>Press Enter key to add tag</FormHelperText>
                 ) : (
-                  <FormErrorMessage>
-                    {tagError}
-                  </FormErrorMessage>
+                  <FormErrorMessage>{tagError}</FormErrorMessage>
                 )}
               </FormControl>
             </VStack>
@@ -336,10 +370,9 @@ export default function DocCard({ docID, ...props }: any) {
   // Subscribe to document title
   useEffect(() => {
     if (!auth.user) return;
-    const unsubscribe = onValue(ref(getDatabase(), `docs/${docID}/title`),
-      snapshot => setTitle(
-        snapshot.exists() ? snapshot.val() :
-          undefined),
+    const unsubscribe = onValue(
+      ref(getDatabase(), `docs/${docID}/title`),
+      (snapshot) => setTitle(snapshot.exists() ? snapshot.val() : undefined),
       (e) => {
         // TODO: Alert notification?
         console.log("Title Error: " + e);
@@ -353,10 +386,10 @@ export default function DocCard({ docID, ...props }: any) {
   // Subscribe to document timestamp
   useEffect(() => {
     if (!auth.user) return;
-    const unsubscribe = onValue(ref(getDatabase(), `docs/${docID}/timestamp`),
-      snapshot => setTimestamp(
-        snapshot.exists() ? snapshot.val() :
-          undefined),
+    const unsubscribe = onValue(
+      ref(getDatabase(), `docs/${docID}/timestamp`),
+      (snapshot) =>
+        setTimestamp(snapshot.exists() ? snapshot.val() : undefined),
       (e) => {
         // TODO: Alert notification?
         console.log("Timestamp Error: " + e);
@@ -370,10 +403,9 @@ export default function DocCard({ docID, ...props }: any) {
   // Subscribe to document tags
   useEffect(() => {
     if (!auth.user) return;
-    const unsubscribe = onValue(ref(getDatabase(), `docs/${docID}/tags`),
-      snapshot => setTags(
-        snapshot.exists() ? snapshot.val() :
-          undefined),
+    const unsubscribe = onValue(
+      ref(getDatabase(), `docs/${docID}/tags`),
+      (snapshot) => setTags(snapshot.exists() ? snapshot.val() : undefined),
       (e) => {
         // TODO: Alert notification?
         console.log("Tags fetch error: " + e);
@@ -419,15 +451,19 @@ export default function DocCard({ docID, ...props }: any) {
       </HStack>
       <Flex w="vw" mt="10px" mr="-5px" flexDirection="row-reverse">
         <DeleteDocButton docID={docID} title={title} />
-        <EditTagsButton docID={docID} title={title} setTitle={setTitle} tags={tags} setTags={setTags} />
+        <EditTagsButton
+          docID={docID}
+          title={title}
+          setTitle={setTitle}
+          tags={tags}
+          setTags={setTags}
+        />
         <Spacer />
-        <HStack
-          mt="1"
-          overflow='hidden'
-        >
-          {tags !== undefined && Object.values(tags).map((tag: any) => {
-            return (<ColorfulTag key={docID + '-tag-' + tag} tag={tag} />)
-          })}
+        <HStack mt="1" overflow="hidden">
+          {tags !== undefined &&
+            Object.values(tags).map((tag: any) => {
+              return <ColorfulTag key={docID + "-tag-" + tag} tag={tag} />;
+            })}
         </HStack>
       </Flex>
     </LinkBox>
