@@ -15,6 +15,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProvideAuth } from "hooks/useAuth";
 import PasswordInput from "./PasswordInput";
+import { Helmet } from "react-helmet";
 
 function LoginForm(props: any) {
   const [email, setEmail] = useState("");
@@ -65,76 +66,82 @@ export default function Login() {
   const authentication = useProvideAuth();
 
   return (
-    <Flex minH={"100vh"} align={"center"} justify={"center"}>
-      <VStack spacing="6">
-        <Heading size="3xl" fontFamily="League Spartan">
-          Login
-        </Heading>
-        <LoginForm
-          onButtonClick={(email: string, password: string) => {
-            authentication.signin(email, password)
-              .then(response => {
-                navigate("/dashboard");
-                toast({
-                  title: "Logged in!",
-                  status: "success",
-                  isClosable: true
+    <>
+      <Helmet>
+        <title>Login - coNote</title>
+      </Helmet>
+      <Flex minH={"100vh"} align={"center"} justify={"center"}>
+        <VStack spacing="6">
+          <Heading size="3xl" fontFamily="League Spartan">
+            Login
+          </Heading>
+          <LoginForm
+            onButtonClick={(email: string, password: string) => {
+              authentication
+                .signin(email, password)
+                .then((response) => {
+                  navigate("/dashboard");
+                  toast({
+                    title: "Logged in!",
+                    status: "success",
+                    isClosable: true,
+                  });
+                })
+                .catch((error) => {
+                  let errorTitle = "";
+                  switch (error.code) {
+                    case "auth/invalid-email":
+                      errorTitle = "Invalid email";
+                      break;
+                    case "auth/user-disabled":
+                      errorTitle = "User is disabled";
+                      break;
+                    case "auth/user-not-found":
+                      errorTitle = "Incorrect email";
+                      break;
+                    case "auth/wrong-password":
+                      errorTitle = "Incorrect password";
+                      break;
+                    default:
+                      console.log(error.code);
+                      errorTitle = "Error";
+                      break;
+                  }
+                  toast({
+                    title: errorTitle,
+                    status: "error",
+                    isClosable: true,
+                  });
                 });
-              })
-              .catch(error => {
-                let errorTitle = "";
-                switch (error.code) {
-                  case "auth/invalid-email":
-                    errorTitle = "Invalid email";
-                    break;
-                  case "auth/user-disabled":
-                    errorTitle = "User is disabled";
-                    break;
-                  case "auth/user-not-found":
-                    errorTitle = "Incorrect email";
-                    break;
-                  case "auth/wrong-password":
-                    errorTitle = "Incorrect password";
-                    break;
-                  default:
-                    console.log(error.code);
-                    errorTitle = "Error";
-                    break;
-                }
-                toast({
-                  title: errorTitle,
-                  status: "error",
-                  isClosable: true
-                });
-              });
-          }}
-          buttonValue={"Login"}
-        />
-        <Text textColor="gray.400">
-          New to coNote?{" "}
-          <Link
-            _hover={{
-              textColor: "gray.600",
-              textDecoration: "underline",
             }}
-            as={RouteLink}
-            to="/signup"
-          >
-            Sign up!
-          </Link>
-          <br></br>
-          <Link
-            _hover={{
-              textColor: "gray.600",
-              textDecoration: "underline",
-            }}
-            as={RouteLink}
-            to="/forget_password"
-          >
-            Forgot your password?
-          </Link>
-        </Text>
-      </VStack>
-    </Flex>
+            buttonValue={"Login"}
+          />
+          <Text textColor="gray.400">
+            New to coNote?{" "}
+            <Link
+              _hover={{
+                textColor: "gray.600",
+                textDecoration: "underline",
+              }}
+              as={RouteLink}
+              to="/signup"
+            >
+              Sign up!
+            </Link>
+            <br></br>
+            <Link
+              _hover={{
+                textColor: "gray.600",
+                textDecoration: "underline",
+              }}
+              as={RouteLink}
+              to="/forget_password"
+            >
+              Forgot your password?
+            </Link>
+          </Text>
+        </VStack>
+      </Flex>
+    </>
   );
 }

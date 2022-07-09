@@ -3,6 +3,7 @@ import Logo from "./Logo";
 import { useParams } from "react-router-dom";
 import { Link as RouteLink, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet";
 
 const ErrorMsg: any = {
   403: "You do not have the correct permissions to access the resource. Please contact the owner of the resource to resolve this issue.",
@@ -30,32 +31,37 @@ export default function ErrorPage() {
   }, []);
 
   return (
-    <Flex minH="100vh" p="4" flexDirection="column">
-      <Logo fontSize="52pt" textShadow="0px 1px 3px #00000033" mt="7vh" />
-      <Heading size="4xl" fontFamily="League Spartan" mt="13vh">
-        {params.errorID}
-      </Heading>
-      <Heading fontFamily="League Spartan" mt="1em">
-        We're Sorry!
-      </Heading>
-      <Text>
-        {params.errorID ? ErrorMsg[params.errorID] || ErrorMsg[500] : ""}
-      </Text>
-      <Text mt="20vh">
-        You'll be redirected to home in {remainingTime} seconds. Alternatively,
-        you can{" "}
-        <Link
-          textDecor="underline"
-          _hover={{
-            textColor: "blue.500",
-          }}
-          as={RouteLink}
-          to="/"
-        >
-          click here
-        </Link>{" "}
-        to be redirected immediately.
-      </Text>
-    </Flex>
+    <>
+      <Helmet>
+        <title>{params.errorID + " - coNote"}</title>
+      </Helmet>
+      <Flex minH="100vh" p="4" flexDirection="column">
+        <Logo fontSize="52pt" textShadow="0px 1px 3px #00000033" mt="7vh" />
+        <Heading size="4xl" fontFamily="League Spartan" mt="13vh">
+          {params.errorID}
+        </Heading>
+        <Heading fontFamily="League Spartan" mt="1em">
+          We're Sorry!
+        </Heading>
+        <Text>
+          {params.errorID ? ErrorMsg[params.errorID] || ErrorMsg[500] : ""}
+        </Text>
+        <Text mt="20vh">
+          You'll be redirected to home in {remainingTime} seconds.
+          Alternatively, you can{" "}
+          <Link
+            textDecor="underline"
+            _hover={{
+              textColor: "blue.500",
+            }}
+            as={RouteLink}
+            to="/"
+          >
+            click here
+          </Link>{" "}
+          to be redirected immediately.
+        </Text>
+      </Flex>
+    </>
   );
 }
