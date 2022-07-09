@@ -23,6 +23,7 @@ import DashboardNavbar from "./DashboardNavbar";
 import DocCard from "./DocCard";
 import { useEffect, useState } from "react";
 import { child, get, getDatabase, ref } from "firebase/database";
+import { Helmet } from "react-helmet";
 
 export default function Dashboard() {
   const { userData, ...auth } = useProvideAuth();
@@ -137,24 +138,34 @@ export default function Dashboard() {
   if (!auth.user) return <></>;
   else {
     return (
-      <Box>
-        <DashboardNavbar
-          tags={tagsFilter}
-          setTags={setTagsFilter}
-          filterOption={tagsFilterOption}
-          setFilterOption={setTagsFilterOption}
-          sorter={sorter}
-          setSorter={setSorter}
-          setDocType={setDocType}
-        />
+      <>
+        <Helmet>
+          <title>Dashboard - coNote</title>
+        </Helmet>
+        <Box>
+          <DashboardNavbar
+            tags={tagsFilter}
+            setTags={setTagsFilter}
+            filterOption={tagsFilterOption}
+            setFilterOption={setTagsFilterOption}
+            sorter={sorter}
+            setSorter={setSorter}
+            setDocType={setDocType}
+          />
 
-        <SimpleGrid minChildWidth="240px" paddingX="7" marginTop="12vh" gap="5">
-          {documents !== undefined &&
-            Object.values(documents).map((item) => {
-              return <DocCard key={"doc-card-" + item} docID={item} />;
-            })}
-        </SimpleGrid>
-      </Box>
+          <SimpleGrid
+            minChildWidth="240px"
+            paddingX="7"
+            marginTop="12vh"
+            gap="5"
+          >
+            {documents !== undefined &&
+              Object.values(documents).map((item) => {
+                return <DocCard key={"doc-card-" + item} docID={item} />;
+              })}
+          </SimpleGrid>
+        </Box>
+      </> 
     );
   }
 }
