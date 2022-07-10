@@ -1,0 +1,6 @@
+.cursor-element {
+  color: #fff;
+  font-family: monospace;
+  border-right: 0.15em solid orange; /* The typwriter cursor */
+  white-space: nowrap; /* Keeps the content on a single line */
+}

@@ -27,7 +27,6 @@ export default function useFirepad(
   const [userRole, setUserRole] = useState<String | undefined>();
 
   useEffect(() => {
-    console.log("AUTH: " + auth.user);
     if (auth.user === null) return;
 
     let docRef = "debug_doc";
@@ -72,7 +71,7 @@ export default function useFirepad(
 
     let lastSecond: number = 0;
     let updatedYet: boolean = false;
-    // Remember to doc esc+tab to escape focus.
+    // TODO: Remember to doc esc+tab to escape focus.
     const view = new EditorView({
       extensions: [
         basicSetup,
@@ -105,7 +104,7 @@ export default function useFirepad(
     });
 
     setView(view);
-    let firepad;
+    let firepad: any;
 
     // If you modify the default text, make sure it's non-empty.
     // Otherwise, the timestamp bug issue will be a slight issue.
@@ -134,6 +133,12 @@ export default function useFirepad(
     });
 
     return () => {
+      // Lucafabbian's firepad.dispose not working.
+      // Needs to be done manually. Perhaps should
+      // create an issue.
+      if (auth.user) {
+        set(ref(getDatabase(), `docs/${docID}/users/${auth.user.uid}`), null);
+      }
       view.destroy();
       setView(undefined);
     };
