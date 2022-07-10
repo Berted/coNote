@@ -7,8 +7,8 @@ import {
 } from "@codemirror/view";
 import getCursors from "./getCursors";
 
-const cursorPlugin = (uid: string, userPresenceHandler: any) => {
-  ViewPlugin.fromClass(
+const cursorPlugin = (uid: string | undefined, userPresenceHandler: any) => {
+  return ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
 

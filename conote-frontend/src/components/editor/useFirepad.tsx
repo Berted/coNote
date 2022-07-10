@@ -14,6 +14,8 @@ import { indentWithTab } from "@codemirror/commands";
 import Firepad from "@lucafabbian/firepad";
 
 import { useProvideAuth } from "hooks/useAuth";
+import UserPresenceHandler from "./userPresence/UserPresenceHandler";
+import cursorPlugin from "./userPresence/cursorPlugin";
 
 export default function useFirepad(
   docID: string | undefined,
@@ -71,6 +73,14 @@ export default function useFirepad(
 
     let lastSecond: number = 0;
     let updatedYet: boolean = false;
+    let upHandler = new UserPresenceHandler(docRef);
+    upHandler.registerListener("debug-console-log-listener", (up: any) => {
+      for (let x in up) {
+        console.log("User Present: " + x);
+        console.log("User " + x + " fullname: " + up[x].name);
+        console.log("User " + x + " [" + up[x].from + ", " + up[x].to + "]");
+      }
+    });
     // TODO: Remember to doc esc+tab to escape focus.
     const view = new EditorView({
       extensions: [
@@ -98,7 +108,21 @@ export default function useFirepad(
             // TODO: Hacky solution to get timestamp to not update on document enter.
             updatedYet = true;
           }
+
+          if (update.selectionSet && auth?.user) {
+            set(
+              ref(
+                getDatabase(),
+                docRef + "/users/" + auth.user.uid + "/cursor"
+              ),
+              {
+                from: update.state.selection.main.from,
+                to: update.state.selection.main.to,
+              }
+            );
+          }
         }),
+        cursorPlugin(auth.user ? auth.user.uid : undefined, upHandler),
       ],
       parent: editorRef.current,
     });
@@ -139,6 +163,7 @@ export default function useFirepad(
       if (auth.user) {
         set(ref(getDatabase(), `docs/${docID}/users/${auth.user.uid}`), null);
       }
+      upHandler.deregister();
       view.destroy();
       setView(undefined);
     };

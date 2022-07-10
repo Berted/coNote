@@ -1,7 +1,7 @@
 import { EditorView, Decoration } from "@codemirror/view";
 import CursorWidget from "./CursorWidget";
 
-export default function getCursors(uid: string, userPresence: any) {
+export default function getCursors(uid: string | undefined, userPresence: any) {
   let widgets = [];
   for (let x in userPresence) {
     if (x === uid) continue;

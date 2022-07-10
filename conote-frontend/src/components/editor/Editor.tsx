@@ -1,7 +1,6 @@
 import { HStack, Box, VStack } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import useDebounce from "hooks/useDebounce";
 
 import "firebase/compat/database";
 import EditorNavbar from "./EditorNavbar";
