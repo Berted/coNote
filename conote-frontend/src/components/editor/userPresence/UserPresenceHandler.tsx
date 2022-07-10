@@ -1,4 +1,4 @@
-import { get, onValue, ref, getDatabase } from "firebase/database";
+import { get, onChildChanged, ref, getDatabase } from "firebase/database";
 
 export default class UserPresenceHandler {
   map: Map<String, (userPresence: any) => void>;
@@ -10,30 +10,27 @@ export default class UserPresenceHandler {
     this.map = new Map();
     this.docRef = docRef;
     this.userPresenceData = {};
-    this.unsub = onValue(
+    this.unsub = onChildChanged(
       ref(getDatabase(), `${docRef}/users`),
       (snapshot) => {
-        for (let x in snapshot.val()) {
-          if (this.userPresenceData[x] === undefined) {
-            this.userPresenceData[x] = {
-              name: x,
-              color: snapshot.val()[x].color,
-              from: snapshot.val()[x]?.cursor?.from,
-              to: snapshot.val()[x]?.cursor?.to,
-            };
-            get(ref(getDatabase(), `users/${x}/fullname`)).then((snap2) => {
-              this.userPresenceData[x].name = snap2.val();
-              this.callListener();
-            });
-          } else {
-            this.userPresenceData[x].color = snapshot.val()[x].color;
-            this.userPresenceData[x].from = snapshot.val()[x]?.cursor?.from;
-            this.userPresenceData[x].to = snapshot.val()[x]?.cursor?.to;
-          }
-        }
-        for (let x in this.userPresenceData) {
-          if (snapshot.val()[x] === undefined)
-            this.userPresenceData[x] = undefined;
+        let x = snapshot.key || ""; // "" case shouldn't occur.
+        if (snapshot.val() === undefined) this.userPresenceData[x] = undefined;
+        else if (this.userPresenceData[x] === undefined) {
+          this.userPresenceData[x] = {
+            name: x,
+            color: snapshot.val().color,
+            from: snapshot.val()?.cursor?.from,
+            to: snapshot.val()?.cursor?.to,
+          };
+          get(ref(getDatabase(), `users/${x}/fullname`)).then((snap2) => {
+            this.userPresenceData[x].name = snap2.val();
+            this.callListener();
+          });
+        } else {
+          // TODO: User Presence Data fullname never re-grabbed, probably not an issue.
+          this.userPresenceData[x].color = snapshot.val().color;
+          this.userPresenceData[x].from = snapshot.val()?.cursor?.from;
+          this.userPresenceData[x].to = snapshot.val()?.cursor?.to;
         }
         this.callListener();
       },

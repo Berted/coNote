@@ -4,7 +4,7 @@ import CursorWidget from "./CursorWidget";
 export default function getCursors(uid: string | undefined, userPresence: any) {
   let widgets = [];
   for (let x in userPresence) {
-    if (x === uid) continue;
+    if (x === uid || userPresence[x].to === undefined) continue;
     let deco = Decoration.widget({
       widget: new CursorWidget(userPresence[x].name, userPresence[x].color),
     });
