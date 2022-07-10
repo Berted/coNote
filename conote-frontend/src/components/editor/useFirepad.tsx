@@ -15,7 +15,8 @@ import Firepad from "@lucafabbian/firepad";
 
 import { useProvideAuth } from "hooks/useAuth";
 import UserPresenceHandler from "./userPresence/UserPresenceHandler";
-import cursorPlugin from "./userPresence/cursorPlugin";
+import cursorField from "./userPresence/cursorField";
+import CursorHandler from "./userPresence/CursorHandler";
 
 export default function useFirepad(
   docID: string | undefined,
@@ -122,11 +123,12 @@ export default function useFirepad(
             );
           }
         }),
-        cursorPlugin(auth.user ? auth.user.uid : undefined, upHandler),
+        cursorField(auth.user ? auth.user.uid : undefined, upHandler),
       ],
       parent: editorRef.current,
     });
 
+    let cursorHandler = new CursorHandler(view, upHandler);
     setView(view);
     let firepad: any;
 
@@ -155,7 +157,6 @@ export default function useFirepad(
     firepad.on("ready", () => {
       setAvailable(true);
     });
-
     return () => {
       // Lucafabbian's firepad.dispose not working.
       // Needs to be done manually. Perhaps should
@@ -163,6 +164,7 @@ export default function useFirepad(
       if (auth.user) {
         set(ref(getDatabase(), `docs/${docID}/users/${auth.user.uid}`), null);
       }
+      firepad.off("ready");
       upHandler.deregister();
       view.destroy();
       setView(undefined);

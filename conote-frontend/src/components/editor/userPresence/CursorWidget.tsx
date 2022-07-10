@@ -2,12 +2,16 @@ import { EditorView, WidgetType } from "@codemirror/view";
 import "./cursor.css";
 
 export default class CursorWidget extends WidgetType {
-  constructor(readonly name: string, readonly color?: string) {
+  constructor(
+    readonly uid: string,
+    readonly name: string,
+    readonly color?: string
+  ) {
     super();
   }
 
   eq(other: CursorWidget) {
-    return this.name === other.name && this.color === other.color;
+    return this.uid === other.uid && this.color === other.color;
   }
 
   toDOM(view: EditorView) {
