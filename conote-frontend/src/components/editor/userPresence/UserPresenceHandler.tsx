@@ -1,4 +1,11 @@
-import { get, onChildChanged, ref, getDatabase } from "firebase/database";
+import {
+  get,
+  onChildChanged,
+  ref,
+  getDatabase,
+  Unsubscribe,
+  onChildRemoved,
+} from "firebase/database";
 
 export default class UserPresenceHandler {
   map: Map<String, (userPresence: any) => void>;
@@ -6,7 +13,7 @@ export default class UserPresenceHandler {
   onRemMap: Map<String, (userPresence: any) => void>;
   docRef: string;
   userPresenceData: any;
-  unsub: any;
+  unsub: Unsubscribe[];
   deregistered: boolean;
 
   constructor(docRef: string) {
@@ -16,23 +23,52 @@ export default class UserPresenceHandler {
     this.docRef = docRef;
     this.userPresenceData = {};
     this.deregistered = false;
+    this.unsub = [];
     get(ref(getDatabase(), `${docRef}/users`))
       .then((snapshot) => {
         for (let x in snapshot.val()) {
-          console.log("Initializing: " + x);
           this.handleUserData({ uid: x || "", ...snapshot.val()[x] });
         }
       })
       .then(() => {
-        this.unsub = onChildChanged(
-          ref(getDatabase(), `${docRef}/users`),
-          (snapshot) => {
-            this.handleUserData({ uid: snapshot.key || "", ...snapshot.val() });
-          },
-          // TODO: Toast messsage.
-          (e) => {
-            console.log("Unable to construct user presence handler: " + e);
-          }
+        this.unsub.push(
+          onChildChanged(
+            ref(getDatabase(), `${docRef}/users`),
+            (snapshot) => {
+              console.log(
+                "Child changed: " + snapshot.key + " " + snapshot.val()
+              );
+              this.handleUserData({
+                uid: snapshot.key || "",
+                ...snapshot.val(),
+              });
+            },
+            // TODO: Toast messsage.
+            (e) => {
+              console.log(
+                "Unable to construct user presence handler (onChildChanged): " +
+                  e
+              );
+            }
+          )
+        );
+        this.unsub.push(
+          onChildRemoved(
+            ref(getDatabase(), `${docRef}/users`),
+            (snapshot) => {
+              console.log(
+                "Child removed: " + snapshot.key + " " + snapshot.val()
+              );
+              this.handleUserData({ uid: snapshot.key || "" });
+            },
+            // TODO: Toast messsage.
+            (e) => {
+              console.log(
+                "Unable to construct user presence handler (onChildRemoved): " +
+                  e
+              );
+            }
+          )
         );
       });
   }
@@ -42,7 +78,7 @@ export default class UserPresenceHandler {
     console.log("Handling user data: " + userData.uid + " " + userData.color);
     if (userData.color === undefined) {
       this.callOnRemListener({ uid: x, ...this.userPresenceData[x] });
-      this.userPresenceData[x] = undefined;
+      delete this.userPresenceData[x];
     } else if (this.userPresenceData[x] === undefined) {
       this.userPresenceData[x] = {
         name: x,
@@ -115,7 +151,7 @@ export default class UserPresenceHandler {
     if (this.deregistered)
       console.log("Deregistered twice... Should not happen");
     this.deregistered = true;
-    this.unsub();
+    for (let x of this.unsub) x();
     this.map.clear();
     this.onAddMap.clear();
     this.onRemMap.clear();

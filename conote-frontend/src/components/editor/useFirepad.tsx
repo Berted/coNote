@@ -2,7 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { compatApp } from "config/firebaseConfig";
-import { set, get, getDatabase, ref, serverTimestamp } from "firebase/database";
+import {
+  set,
+  get,
+  getDatabase,
+  ref,
+  serverTimestamp,
+  onDisconnect,
+} from "firebase/database";
 import firebase from "firebase/compat/app";
 
 import { EditorView, keymap } from "@codemirror/view";
@@ -81,13 +88,13 @@ export default function useFirepad(
 
     let updatedYet: boolean = false;
     let upHandler = new UserPresenceHandler(docRef);
-    /*upHandler.registerListener("debug-console-log-listener", (up: any) => {
+    upHandler.registerListener("debug-console-log-listener", (up: any) => {
       for (let x in up) {
         console.log("User Present: " + x);
         console.log("User " + x + " fullname: " + up[x].name);
         console.log("User " + x + " [" + up[x].from + ", " + up[x].to + "]");
       }
-    });*/
+    });
     // TODO: Remember to doc esc+tab to escape focus.
     const view = new EditorView({
       extensions: [
@@ -173,6 +180,13 @@ export default function useFirepad(
 
     firepad.on("ready", () => {
       let cursorHandler = new CursorHandler(view, upHandler);
+      if (auth.user) {
+        onDisconnect(ref(getDatabase(), `docs/${docID}/users/${auth.user.uid}`))
+          .remove()
+          .catch((e) => {
+            console.log("Unable to set onDisconnect: " + e);
+          });
+      }
       setAvailable(true);
     });
     return () => {
