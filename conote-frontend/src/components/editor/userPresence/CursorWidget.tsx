@@ -18,7 +18,7 @@ export default class CursorWidget extends WidgetType {
     let component = document.createElement("span");
     component.className = "cursor-element";
     component.setAttribute("aria-hidden", "false");
-    if (this.color) component.style.borderRightColor = this.color;
+    if (this.color) component.style.borderLeftColor = this.color;
     return component;
   }
 

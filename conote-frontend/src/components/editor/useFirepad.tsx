@@ -29,6 +29,9 @@ export default function useFirepad(
   const [available, setAvailable] = useState<boolean>(false);
   const [userRole, setUserRole] = useState<String | undefined>();
 
+  // TODO: Declare const file?
+  const CURSOR_UPDATE_INTERVAL = 100;
+
   useEffect(() => {
     if (auth.user === null) return;
 
@@ -73,15 +76,18 @@ export default function useFirepad(
     if (docID) docRef = "docs/" + docID;
 
     let lastSecond: number = 0;
+    let lastCursorUpdate: number = 0;
+    let cursorUpdate: any = null;
+
     let updatedYet: boolean = false;
     let upHandler = new UserPresenceHandler(docRef);
-    upHandler.registerListener("debug-console-log-listener", (up: any) => {
+    /*upHandler.registerListener("debug-console-log-listener", (up: any) => {
       for (let x in up) {
         console.log("User Present: " + x);
         console.log("User " + x + " fullname: " + up[x].name);
         console.log("User " + x + " [" + up[x].from + ", " + up[x].to + "]");
       }
-    });
+    });*/
     // TODO: Remember to doc esc+tab to escape focus.
     const view = new EditorView({
       extensions: [
@@ -110,17 +116,29 @@ export default function useFirepad(
             updatedYet = true;
           }
 
-          if (update.selectionSet && auth?.user) {
-            set(
-              ref(
-                getDatabase(),
-                docRef + "/users/" + auth.user.uid + "/cursor"
-              ),
-              {
-                from: update.state.selection.main.from,
-                to: update.state.selection.main.to,
-              }
-            );
+          if ((update.docChanged || update.selectionSet) && auth.user) {
+            // Based on Firepad's original cursor tracking logic:
+            // We want to push cursor changes to Firebase AFTER edits to the history,
+            // because the cursor coordinates will already be in post-change units.
+            // Sleeping for (at least) 1ms ensures that sendCursor happens after sendOperation.
+            if (cursorUpdate) {
+              clearTimeout(cursorUpdate);
+              cursorUpdate = null;
+            }
+            cursorUpdate = setTimeout(() => {
+              if (!auth.user) return;
+              set(
+                ref(
+                  getDatabase(),
+                  docRef + "/users/" + auth.user.uid + "/cursor"
+                ),
+                {
+                  from: update.state.selection.main.from,
+                  to: update.state.selection.main.to,
+                }
+              );
+              lastCursorUpdate = Date.now();
+            }, Math.max(1, CURSOR_UPDATE_INTERVAL - (Date.now() - lastCursorUpdate)));
           }
         }),
         cursorField(auth.user ? auth.user.uid : undefined, upHandler),
@@ -128,7 +146,6 @@ export default function useFirepad(
       parent: editorRef.current,
     });
 
-    let cursorHandler = new CursorHandler(view, upHandler);
     setView(view);
     let firepad: any;
 
@@ -155,6 +172,7 @@ export default function useFirepad(
     }
 
     firepad.on("ready", () => {
+      let cursorHandler = new CursorHandler(view, upHandler);
       setAvailable(true);
     });
     return () => {

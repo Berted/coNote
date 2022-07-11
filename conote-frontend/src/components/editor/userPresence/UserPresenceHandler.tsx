@@ -16,43 +16,57 @@ export default class UserPresenceHandler {
     this.docRef = docRef;
     this.userPresenceData = {};
     this.deregistered = false;
-    this.unsub = onChildChanged(
-      ref(getDatabase(), `${docRef}/users`),
-      (snapshot) => {
-        let x = snapshot.key || ""; // "" case shouldn't occur.
-        if (snapshot.val() === undefined) {
-          this.callOnRemListener({ uid: x, ...this.userPresenceData[x] });
-          this.userPresenceData[x] = undefined;
-        } else if (this.userPresenceData[x] === undefined) {
-          this.userPresenceData[x] = {
-            name: x,
-            color: snapshot.val().color,
-            from: snapshot.val()?.cursor?.from,
-            to: snapshot.val()?.cursor?.to,
-          };
-          get(ref(getDatabase(), `users/${x}/fullname`)).then((snap2) => {
-            this.callOnRemListener({ uid: x, ...this.userPresenceData[x] });
-            this.userPresenceData[x].name = snap2.val();
-            this.callOnAddListener({ uid: x, ...this.userPresenceData[x] });
-            this.callListener();
-          });
-          this.callOnAddListener({ uid: x, ...this.userPresenceData[x] });
-        } else {
-          // TODO: User Presence Data fullname never re-grabbed, probably not an issue.
-          this.callOnRemListener({ uid: x, ...this.userPresenceData[x] });
-          this.userPresenceData[x].color = snapshot.val().color;
-          this.userPresenceData[x].from = snapshot.val()?.cursor?.from;
-          this.userPresenceData[x].to = snapshot.val()?.cursor?.to;
-          this.callOnAddListener({ uid: x, ...this.userPresenceData[x] });
+    get(ref(getDatabase(), `${docRef}/users`))
+      .then((snapshot) => {
+        for (let x in snapshot.val()) {
+          console.log("Initializing: " + x);
+          this.handleUserData({ uid: x || "", ...snapshot.val()[x] });
         }
-        this.callListener();
-      },
-      // TODO: Toast messsage.
-      (e) => {
-        console.log("Unable to construct user presence handler: " + e);
-      }
-    );
+      })
+      .then(() => {
+        this.unsub = onChildChanged(
+          ref(getDatabase(), `${docRef}/users`),
+          (snapshot) => {
+            this.handleUserData({ uid: snapshot.key || "", ...snapshot.val() });
+          },
+          // TODO: Toast messsage.
+          (e) => {
+            console.log("Unable to construct user presence handler: " + e);
+          }
+        );
+      });
   }
+
+  handleUserData = (userData: any) => {
+    let x = userData.uid;
+    console.log("Handling user data: " + userData.uid + " " + userData.color);
+    if (userData.color === undefined) {
+      this.callOnRemListener({ uid: x, ...this.userPresenceData[x] });
+      this.userPresenceData[x] = undefined;
+    } else if (this.userPresenceData[x] === undefined) {
+      this.userPresenceData[x] = {
+        name: x,
+        color: userData.color,
+        from: userData?.cursor?.from,
+        to: userData?.cursor?.to,
+      };
+      this.callOnAddListener({ uid: x, ...this.userPresenceData[x] });
+      get(ref(getDatabase(), `users/${x}/fullname`)).then((snap2) => {
+        this.callOnRemListener({ uid: x, ...this.userPresenceData[x] });
+        this.userPresenceData[x].name = snap2.val();
+        this.callOnAddListener({ uid: x, ...this.userPresenceData[x] });
+        this.callListener();
+      });
+    } else {
+      // TODO: User Presence Data fullname never re-grabbed, probably not an issue.
+      this.callOnRemListener({ uid: x, ...this.userPresenceData[x] });
+      this.userPresenceData[x].color = userData.color;
+      this.userPresenceData[x].from = userData?.cursor?.from;
+      this.userPresenceData[x].to = userData?.cursor?.to;
+      this.callOnAddListener({ uid: x, ...this.userPresenceData[x] });
+    }
+    this.callListener();
+  };
 
   callListener = (listenerKey?: string) => {
     if (listenerKey) {
@@ -88,7 +102,8 @@ export default class UserPresenceHandler {
   registerOnAddListener = (key: string, callback: (userData: any) => void) => {
     this.onAddMap.set(key, callback);
     if (this.userPresenceData) {
-      for (let x in this.userPresenceData) callback(this.userPresenceData[x]);
+      for (let x in this.userPresenceData)
+        callback({ uid: x, ...this.userPresenceData[x] });
     }
   };
 
@@ -97,7 +112,9 @@ export default class UserPresenceHandler {
   };
 
   deregister = () => {
-    if (this.deregistered) this.deregistered = true;
+    if (this.deregistered)
+      console.log("Deregistered twice... Should not happen");
+    this.deregistered = true;
     this.unsub();
     this.map.clear();
     this.onAddMap.clear();
