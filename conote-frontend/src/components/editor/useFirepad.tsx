@@ -22,7 +22,8 @@ import Firepad from "@lucafabbian/firepad";
 
 import { useProvideAuth } from "hooks/useAuth";
 import UserPresenceHandler from "./userPresence/UserPresenceHandler";
-import cursorField from "./userPresence/cursorField";
+import selectionPlugin from "./userPresence/selectionPlugin";
+import cursorPlugin from "./userPresence/cursorPlugin";
 import CursorHandler from "./userPresence/CursorHandler";
 
 export default function useFirepad(
@@ -35,6 +36,7 @@ export default function useFirepad(
   const [docContent, setDocContent] = useState("");
   const [available, setAvailable] = useState<boolean>(false);
   const [userRole, setUserRole] = useState<String | undefined>();
+  const [userPresence, setUserPresence] = useState<any>();
 
   // TODO: Declare const file?
   const CURSOR_UPDATE_INTERVAL = 100;
@@ -79,7 +81,8 @@ export default function useFirepad(
   useEffect(() => {
     if (!editorRef.current || !userRole || auth.user === null) return;
 
-    let docRef = "debug_doc";
+    let docRef = "debug_doc",
+      uid = auth.user ? auth.user.uid : undefined;
     if (docID) docRef = "docs/" + docID;
 
     let lastSecond: number = 0;
@@ -88,13 +91,16 @@ export default function useFirepad(
 
     let updatedYet: boolean = false;
     let upHandler = new UserPresenceHandler(docRef);
-    upHandler.registerListener("debug-console-log-listener", (up: any) => {
+    /*upHandler.registerListener("debug-console-log-listener", (up: any) => {
       for (let x in up) {
         console.log("User Present: " + x);
         console.log("User " + x + " fullname: " + up[x].name);
         console.log("User " + x + " [" + up[x].from + ", " + up[x].to + "]");
       }
-    });
+    });*/
+    upHandler.registerListener("react-state-update", (up: any) =>
+      setUserPresence(up)
+    );
     // TODO: Remember to doc esc+tab to escape focus.
     const view = new EditorView({
       extensions: [
@@ -123,7 +129,7 @@ export default function useFirepad(
             updatedYet = true;
           }
 
-          if ((update.docChanged || update.selectionSet) && auth.user) {
+          if ((update.docChanged || update.selectionSet) && uid) {
             // Based on Firepad's original cursor tracking logic:
             // We want to push cursor changes to Firebase AFTER edits to the history,
             // because the cursor coordinates will already be in post-change units.
@@ -133,22 +139,17 @@ export default function useFirepad(
               cursorUpdate = null;
             }
             cursorUpdate = setTimeout(() => {
-              if (!auth.user) return;
-              set(
-                ref(
-                  getDatabase(),
-                  docRef + "/users/" + auth.user.uid + "/cursor"
-                ),
-                {
-                  from: update.state.selection.main.from,
-                  to: update.state.selection.main.to,
-                }
-              );
+              if (!uid) return;
+              set(ref(getDatabase(), docRef + "/users/" + uid + "/cursor"), {
+                from: update.state.selection.main.from,
+                to: update.state.selection.main.to,
+              });
               lastCursorUpdate = Date.now();
             }, Math.max(1, CURSOR_UPDATE_INTERVAL - (Date.now() - lastCursorUpdate)));
           }
         }),
-        cursorField(auth.user ? auth.user.uid : undefined, upHandler),
+        selectionPlugin(uid),
+        cursorPlugin(uid),
       ],
       parent: editorRef.current,
     });
@@ -159,13 +160,13 @@ export default function useFirepad(
     // If you modify the default text, make sure it's non-empty.
     // Otherwise, the timestamp bug issue will be a slight issue.
     // TODO: Add to tests.
-    if (auth?.user) {
+    if (uid) {
       firepad = Firepad.fromCodeMirror6(
         firebase.database(compatApp).ref(docRef),
         view,
         {
           defaultText: "# Type your title here!",
-          userId: auth.user.uid,
+          userId: uid,
         }
       );
     } else {
@@ -180,8 +181,8 @@ export default function useFirepad(
 
     firepad.on("ready", () => {
       let cursorHandler = new CursorHandler(view, upHandler);
-      if (auth.user) {
-        onDisconnect(ref(getDatabase(), `docs/${docID}/users/${auth.user.uid}`))
+      if (uid) {
+        onDisconnect(ref(getDatabase(), `docs/${docID}/users/${uid}`))
           .remove()
           .catch((e) => {
             console.log("Unable to set onDisconnect: " + e);
@@ -193,8 +194,9 @@ export default function useFirepad(
       // Lucafabbian's firepad.dispose not working.
       // Needs to be done manually. Perhaps should
       // create an issue.
-      if (auth.user) {
-        set(ref(getDatabase(), `docs/${docID}/users/${auth.user.uid}`), null);
+      console.log("Unregistering Firepad! " + uid);
+      if (uid) {
+        set(ref(getDatabase(), `docs/${docID}/users/${uid}`), null);
       }
       firepad.off("ready");
       upHandler.deregister();

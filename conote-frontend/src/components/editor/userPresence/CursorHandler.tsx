@@ -1,6 +1,6 @@
 import { EditorView } from "codemirror";
 import { StateEffect } from "@codemirror/state";
-import { addCursor, remCursor } from "./cursorField";
+import { addCursor, remCursor } from "./cursorStateEffects";
 import UserPresenceHandler from "./UserPresenceHandler";
 
 export default class CursorHandler {

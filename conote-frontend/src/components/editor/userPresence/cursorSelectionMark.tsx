@@ -1,5 +1,6 @@
 import { Decoration } from "@codemirror/view";
 
+// Taken from firepad's original source code.
 function hex2rgb(hex: string, transparency?: number) {
   if (typeof hex !== "string") {
     throw new TypeError("Expected a string");
@@ -28,7 +29,7 @@ const cursorSelectionMark = (color: string, uid: string) => {
         hex2rgb(color) +
         "; background-color:" +
         hex2rgb(color, transparancy),
-      class: "cursor-selection-element",
+      class: "cm-other-selection-element",
     },
     uid: uid,
   });

@@ -39,6 +39,9 @@ export default function UserButton(props: any) {
           <PopoverBody>
             <Button
               onClick={() => {
+                // Navigates to dashboard first so any components can run unsubscription events that rely on authentication.
+                // IMPORTANT: Make sure Dashboard does not have any unsubscription events that rely on auth.
+                navigate("/dashboard");
                 auth
                   .signout()
                   .then((response: any) => navigate("/"))
