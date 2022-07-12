@@ -98,9 +98,10 @@ export default function useFirepad(
         console.log("User " + x + " [" + up[x].from + ", " + up[x].to + "]");
       }
     });*/
-    upHandler.registerListener("react-state-update", (up: any) =>
-      setUserPresence(up)
-    );
+    upHandler.registerListener("react-state-update", (up: any) => {
+      console.log("Setting UP!");
+      setUserPresence(Object.assign({}, up));
+    });
     // TODO: Remember to doc esc+tab to escape focus.
     const view = new EditorView({
       extensions: [
@@ -206,5 +207,5 @@ export default function useFirepad(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editorRef.current, userRole]);
 
-  return { view, docContent, available, userRole };
+  return { view, docContent, available, userRole, userPresence };
 }

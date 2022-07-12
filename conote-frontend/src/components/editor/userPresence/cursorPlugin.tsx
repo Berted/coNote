@@ -132,6 +132,7 @@ const cursorField = (uid: string | undefined) => {
                 }
                 tooltipTimeout = setTimeout(() => {
                   tooltip.style.opacity = "0.0";
+                  // Note: This timeout must follow the transition timeout!
                   setTimeout(() => {
                     tooltip.style.visibility = "hidden";
                   }, 150);
