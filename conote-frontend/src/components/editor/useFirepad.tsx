@@ -91,15 +91,7 @@ export default function useFirepad(
 
     let updatedYet: boolean = false;
     let upHandler = new UserPresenceHandler(docRef);
-    /*upHandler.registerListener("debug-console-log-listener", (up: any) => {
-      for (let x in up) {
-        console.log("User Present: " + x);
-        console.log("User " + x + " fullname: " + up[x].name);
-        console.log("User " + x + " [" + up[x].from + ", " + up[x].to + "]");
-      }
-    });*/
     upHandler.registerListener("react-state-update", (up: any) => {
-      console.log("Setting UP!");
       setUserPresence(Object.assign({}, up));
     });
     // TODO: Remember to doc esc+tab to escape focus.
@@ -195,7 +187,6 @@ export default function useFirepad(
       // Lucafabbian's firepad.dispose not working.
       // Needs to be done manually. Perhaps should
       // create an issue.
-      console.log("Unregistering Firepad! " + uid);
       if (uid) {
         set(ref(getDatabase(), `docs/${docID}/users/${uid}`), null);
       }

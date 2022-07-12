@@ -81,7 +81,6 @@ export default function UserPresenceAvatars({ userPresence, ...props }: any) {
           }}
         >
           {Object.keys(userPresence).map((x) => {
-            console.log("UP: " + x);
             return (
               <Avatar
                 fontWeight="600"

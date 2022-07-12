@@ -35,9 +35,6 @@ export default class UserPresenceHandler {
           onChildChanged(
             ref(getDatabase(), `${docRef}/users`),
             (snapshot) => {
-              console.log(
-                "Child changed: " + snapshot.key + " " + snapshot.val()
-              );
               this.handleUserData({
                 uid: snapshot.key || "",
                 ...snapshot.val(),
@@ -56,9 +53,6 @@ export default class UserPresenceHandler {
           onChildRemoved(
             ref(getDatabase(), `${docRef}/users`),
             (snapshot) => {
-              console.log(
-                "Child removed: " + snapshot.key + " " + snapshot.val()
-              );
               this.handleUserData({ uid: snapshot.key || "" });
             },
             // TODO: Toast messsage.
@@ -75,7 +69,6 @@ export default class UserPresenceHandler {
 
   handleUserData = (userData: any) => {
     let x = userData.uid;
-    console.log("Handling user data: " + userData.uid + " " + userData.color);
     if (userData.color === undefined) {
       this.callOnRemListener({ uid: x, ...this.userPresenceData[x] });
       delete this.userPresenceData[x];
@@ -117,14 +110,12 @@ export default class UserPresenceHandler {
   };
 
   callOnAddListener = (userData: any, listenerKey?: string) => {
-    console.log("Add called: " + userData.uid);
     for (const [key, val] of this.onAddMap) {
       val(userData);
     }
   };
 
   callOnRemListener = (userData: any) => {
-    console.log("Rem called: " + userData.uid);
     for (const [key, val] of this.onRemMap) {
       val(userData);
     }

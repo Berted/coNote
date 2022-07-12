@@ -71,7 +71,6 @@ const cursorField = (uid: string | undefined) => {
       for (let e of tr.effects) {
         if (e.is(addCursor)) {
           if (e.value.uid === uid) continue;
-          console.log("Adding Cursor: " + e.value.uid);
           ret = [
             ...cursors,
             {
@@ -83,17 +82,13 @@ const cursorField = (uid: string | undefined) => {
           ];
         } else if (e.is(remCursor)) {
           if (e.value.uid === uid) continue;
-          console.log("Remming Cursor: " + e.value.uid);
           ret = cursors.filter((val) => val.uid !== e.value.uid);
         }
       }
-      console.log("Cursors: " + cursors.length);
       return ret;
     },
     provide: (f) => {
-      console.log("Provide called");
       return showTooltip.computeN([f], (state) => {
-        console.log("Mapping called");
         return state.field(f).map((x) => {
           return {
             pos: x.pos,
