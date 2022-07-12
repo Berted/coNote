@@ -47,11 +47,11 @@ const cursorTooltipBaseTheme = EditorView.baseTheme({
     opacity: "1.0",
     fontSize: "12px",
     zIndex: "4000",
-    transition: "opacity 0.5s ease-out",
-    WebkitTransition: "opacity 0.5s ease-out",
-    MozTransition: "opacity 0.5s ease-out",
-    MsTransition: "opacity 0.5s ease-out",
-    OTransition: "opacity 0.5s ease-out",
+    transition: "opacity 0.15s ease-out",
+    WebkitTransition: "opacity 0.15s ease-out",
+    MozTransition: "opacity 0.15s ease-out",
+    MsTransition: "opacity 0.15s ease-out",
+    OTransition: "opacity 0.15s ease-out",
     userSelect: "none",
     WebkitUserSelect: "none",
     MozUserSelect: "-moz-none",
@@ -107,7 +107,36 @@ const cursorField = (uid: string | undefined) => {
               tooltip.className = "cm-other-cursor-tooltip";
               tooltip.textContent = x.name;
               tooltip.style.backgroundColor = x.color;
+              tooltip.style.opacity = "0.0";
+              tooltip.style.visibility = "hidden";
               dom.appendChild(tooltip);
+
+              let tooltipTimeout: ReturnType<typeof setTimeout> | undefined =
+                undefined;
+
+              dom.addEventListener("mouseenter", () => {
+                if (tooltipTimeout) {
+                  clearTimeout(tooltipTimeout);
+                  tooltipTimeout = undefined;
+                }
+                tooltipTimeout = setTimeout(() => {
+                  tooltip.style.visibility = "visible";
+                  tooltip.style.opacity = "1.0";
+                }, 500);
+              });
+
+              dom.addEventListener("mouseleave", () => {
+                if (tooltipTimeout) {
+                  clearTimeout(tooltipTimeout);
+                  tooltipTimeout = undefined;
+                }
+                tooltipTimeout = setTimeout(() => {
+                  tooltip.style.opacity = "0.0";
+                  setTimeout(() => {
+                    tooltip.style.visibility = "hidden";
+                  }, 150);
+                }, 700);
+              });
 
               let offset = { x: 0, y: -16.5 };
               return { dom, offset };
