@@ -51,8 +51,26 @@ function validateEmail(email: string) {
   );
 }
 
+// The following assumes the Owner is never modified from this method.
 async function modifyUserRole(docID: string, uid: string, role: string | null) {
-  return set(ref(getDatabase(), `docs/${docID}/roles/${uid}`), role);
+  let editDocContent = new Promise(() => {});
+
+  if (role === "editor") {
+    editDocContent = set(
+      ref(getDatabase(), `users/${uid}/shared_documents/${docID}`),
+      true
+    );
+  } else {
+    editDocContent = set(
+      ref(getDatabase(), `users/${uid}/shared_documents/${docID}`),
+      null
+    );
+  }
+
+  return Promise.all([
+    set(ref(getDatabase(), `docs/${docID}/roles/${uid}`), role),
+    editDocContent,
+  ]);
 }
 
 function EditUserRoleDropdown({ uid, role, docID, ...props }: any) {
