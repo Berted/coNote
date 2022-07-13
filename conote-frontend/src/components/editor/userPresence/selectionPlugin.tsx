@@ -19,14 +19,6 @@ const selectionField = (uid: string | undefined) => {
       for (let e of tr.effects) {
         if (e.is(addCursor)) {
           if (e.value.uid === uid) continue;
-          console.log(
-            "Adding selection: " +
-              e.value.uid +
-              " " +
-              e.value.from +
-              " " +
-              e.value.to
-          );
           let arr = [];
           if (e.value.from < e.value.to) {
             let deco2 = cursorSelectionMark(e.value.color, e.value.uid);
@@ -45,7 +37,6 @@ const selectionField = (uid: string | undefined) => {
           });
         } else if (e.is(remCursor)) {
           if (e.value.uid === uid) continue;
-          console.log("Remming: " + e.value.uid);
           cursors = cursors.update({
             filter: (from, to, value) => {
               return value.spec.uid !== e.value.uid;

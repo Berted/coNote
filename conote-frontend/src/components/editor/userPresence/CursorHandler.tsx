@@ -3,6 +3,10 @@ import { StateEffect } from "@codemirror/state";
 import { addCursor, remCursor } from "./cursorStateEffects";
 import UserPresenceHandler from "./UserPresenceHandler";
 
+function isPresent(x: Object): boolean {
+  return x !== null && x !== undefined;
+}
+
 export default class CursorHandler {
   view: EditorView;
   userPresenceHandler: UserPresenceHandler;
@@ -15,7 +19,7 @@ export default class CursorHandler {
     userPresenceHandler.registerOnAddListener(
       "cursor-callback-on-add",
       (userData) => {
-        if (userData.from && userData.to) {
+        if (isPresent(userData.from) && isPresent(userData.to)) {
           let cursor = addCursor.of({
             uid: userData.uid,
             name: userData.name,
@@ -30,7 +34,7 @@ export default class CursorHandler {
     userPresenceHandler.registerOnRemListener(
       "cursor-callback-on-rem",
       (userData) => {
-        if (userData.from && userData.to) {
+        if (isPresent(userData.from) && isPresent(userData.to)) {
           let cursor = remCursor.of({
             uid: userData.uid,
             from: Math.min(userData.from, view.state.doc.length),

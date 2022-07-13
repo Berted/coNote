@@ -91,6 +91,7 @@ export default function useFirepad(
 
     let updatedYet: boolean = false;
     let upHandler = new UserPresenceHandler(docRef);
+
     upHandler.registerListener("react-state-update", (up: any) => {
       setUserPresence(Object.assign({}, up));
     });

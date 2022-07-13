@@ -131,7 +131,7 @@ const cursorField = (uid: string | undefined) => {
                   setTimeout(() => {
                     tooltip.style.visibility = "hidden";
                   }, 150);
-                }, 700);
+                }, 750);
               });
 
               let offset = { x: 0, y: -16.5 };

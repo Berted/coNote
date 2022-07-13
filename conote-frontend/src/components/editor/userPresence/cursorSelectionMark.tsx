@@ -23,6 +23,7 @@ function hex2rgb(hex: string, transparency?: number) {
 const cursorSelectionMark = (color: string, uid: string) => {
   let transparancy = 0.4;
   return Decoration.mark({
+    inclusiveStart: true,
     attributes: {
       style:
         "background-color:" +

@@ -88,7 +88,7 @@ export default function UserPresenceAvatars({ userPresence, ...props }: any) {
                 borderColor={userPresence[x].color}
                 name={userPresence[x].name}
                 color="whiteAlpha.900"
-                key={"user-presence-avatar-" + userPresence[x].uid}
+                key={"user-presence-avatar-" + x}
                 icon={<IoPerson />}
               ></Avatar>
             );
