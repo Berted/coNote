@@ -43,6 +43,7 @@ import { useProvideAuth } from "hooks/useAuth";
 import EditorViewSlider from "./EditorViewSlider";
 import ExportButton from "./ExportButton";
 import { AiOutlineConsoleSql } from "react-icons/ai";
+import UserPresenceAvatars from "./userPresence/UserPresenceAvatars";
 
 function validateEmail(email: string) {
   return email.match(
@@ -439,6 +440,7 @@ export default function EditorNavbar({
   docContent,
   editSize,
   setEditSize,
+  userPresence,
   ...props
 }: any) {
   return (
@@ -460,6 +462,7 @@ export default function EditorNavbar({
 
       <HStack spacing="4">
         <HStack align="center" spacing="1">
+          <UserPresenceAvatars userPresence={userPresence} />
           <ExportButton docContent={docContent} />
           <DocShareButton docID={docID} />
         </HStack>

@@ -13,7 +13,7 @@ import { getDatabase, ref, get } from "firebase/database";
 const Editor = () => {
   const editorRef = useRef<HTMLDivElement>(null);
   const params = useParams();
-  const { view, docContent, available, userRole } = useFirepad(
+  const { view, docContent, available, userRole, userPresence } = useFirepad(
     params.docID,
     editorRef
   );
@@ -46,6 +46,7 @@ const Editor = () => {
           docID={params.docID}
           editSize={editSize}
           setEditSize={setEditSize}
+          userPresence={userPresence}
         />
         <HStack verticalAlign="top" textAlign="left" hidden={!available}>
           <VStack w={editSize + "%"} position="fixed" top="73px">
