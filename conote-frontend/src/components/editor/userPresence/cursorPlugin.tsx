@@ -24,7 +24,7 @@ const cursorTooltipBaseTheme = EditorView.baseTheme({
     marginRight: "-1px",
     zIndex: "4000",
   },
-  ".cm-other-cursor-tooltip": {
+  ".cm-tooltip.cm-other-cursor-element .cm-other-cursor-tooltip": {
     position: "absolute",
     whiteSpace: "nowrap",
     maxWidth: "200px",
@@ -99,11 +99,13 @@ const cursorField = (uid: string | undefined) => {
               dom.style.borderLeftColor = x.color;
 
               let tooltip = document.createElement("div");
+              let isFirstLine: boolean = state.doc.lineAt(x.pos).number === 1;
               tooltip.className = "cm-other-cursor-tooltip";
               tooltip.textContent = x.name;
               tooltip.style.backgroundColor = x.color;
               tooltip.style.opacity = "0.0";
               tooltip.style.visibility = "hidden";
+              if (isFirstLine) tooltip.style.top = "13px";
               dom.appendChild(tooltip);
 
               let tooltipTimeout: ReturnType<typeof setTimeout> | undefined =
