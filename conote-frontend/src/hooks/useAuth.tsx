@@ -14,6 +14,7 @@ import {
   signInWithCredential,
   onAuthStateChanged,
   User,
+  verifyPasswordResetCode,
 } from "firebase/auth";
 import {
   getDatabase,
@@ -121,6 +122,9 @@ export function useProvideAuth() {
       return true;
     });
   };
+  const verifyPwdResetCode = (code: string) => {
+    return verifyPasswordResetCode(auth, code);
+  }
 
   const updateUserData = (snapshot: DataSnapshot) => {
     if (user) {
@@ -184,5 +188,6 @@ export function useProvideAuth() {
     signout,
     sendPwdResetEmail,
     confirmPwdReset,
+    verifyPwdResetCode,
   };
 }
