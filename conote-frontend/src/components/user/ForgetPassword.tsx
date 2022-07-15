@@ -62,6 +62,9 @@ export default function ForgetPassword() {
                   .catch((error) => {
                     let errorTitle = "";
                     switch (error.code) {
+                      case "auth/missing-email":
+                        errorTitle = "Missing email";
+                        break;
                       case "auth/invalid-email":
                         errorTitle = "Invalid email";
                         break;
