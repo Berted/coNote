@@ -25,7 +25,7 @@ function SignupForm(props: any) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const isSame = password === confirmPassword;
+  const isError = confirmPassword.length > 0 && password !== confirmPassword;
 
   return (
     <>
@@ -67,14 +67,14 @@ function SignupForm(props: any) {
             type="password"
           />
         </FormControl>
-        <FormControl id="confirm-password" isInvalid={!isSame} >
+        <FormControl id="confirm-password" isInvalid={isError} >
           <FormLabel htmlFor="confirm-password">Confirm password</FormLabel>
           <PasswordInput
             value={confirmPassword}
             onChange={(e: any) => setConfirmPassword(e.target.value)}
             type="password"
           />
-          {(confirmPassword.length === 0 || isSame) ?
+          {!isError ?
             (
               <FormHelperText>
                 <br></br>
