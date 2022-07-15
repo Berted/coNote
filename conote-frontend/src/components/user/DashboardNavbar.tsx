@@ -146,7 +146,8 @@ function SortFilterDrawer({
                   value={sorter}
                   onChange={(e) => setSorter(e.target.value)}
                 >
-                  <option value="time">Most Recent</option>
+                  <option value="time-dec">Most Recent</option>
+                  <option value="time-asc">Least Recent</option>
                   <option value="title-asc">Title Ascending</option>
                   <option value="title-dec">Title Descending</option>
                 </Select>
