@@ -6,6 +6,7 @@ import Login from "./components/user/Login";
 import Signup from "./components/user/Signup";
 import Dashboard from "./components/user/Dashboard";
 import ForgetPassword from "./components/user/ForgetPassword";
+import ResetPassword from "components/user/ResetPassword";
 import {
   BrowserRouter,
   Routes,
@@ -52,6 +53,7 @@ function App() {
             <Route path="login" element={<Login />} />
             <Route path="signup" element={<Signup />} />
             <Route path="forget_password" element={<ForgetPassword />} />
+            <Route path="reset_password" element={<ResetPassword />} />
           </Route>
           <Route
             path="dashboard"

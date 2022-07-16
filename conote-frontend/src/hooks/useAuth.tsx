@@ -14,6 +14,8 @@ import {
   signInWithCredential,
   onAuthStateChanged,
   User,
+  verifyPasswordResetCode,
+  ActionCodeSettings,
 } from "firebase/auth";
 import {
   getDatabase,
@@ -111,8 +113,8 @@ export function useProvideAuth() {
       setUser(false);
     });
   };
-  const sendPwdResetEmail = (email: string) => {
-    return sendPasswordResetEmail(auth, email).then(() => {
+  const sendPwdResetEmail = (email: string, actionCodeSettings?: ActionCodeSettings | undefined) => {
+    return sendPasswordResetEmail(auth, email, actionCodeSettings).then(() => {
       return true;
     });
   };
@@ -121,6 +123,9 @@ export function useProvideAuth() {
       return true;
     });
   };
+  const verifyPwdResetCode = (code: string) => {
+    return verifyPasswordResetCode(auth, code);
+  }
 
   const updateUserData = (snapshot: DataSnapshot) => {
     if (user) {
@@ -184,5 +189,6 @@ export function useProvideAuth() {
     signout,
     sendPwdResetEmail,
     confirmPwdReset,
+    verifyPwdResetCode,
   };
 }
