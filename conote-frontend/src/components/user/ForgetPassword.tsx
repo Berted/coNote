@@ -49,8 +49,17 @@ export default function ForgetPassword() {
             </FormControl>
             <Button
               onClick={() => {
+                let hostLink = window.location.host;
+                var actionCodeSettings = {
+                  url: 'http://' + hostLink,
+                  handleCodeInApp: true,
+                  // When multiple custom dynamic link domains are defined, specify which
+                  // one to use.
+                  // dynamicLinkDomain: "example.page.link"
+                };
+
                 authentication
-                  .sendPwdResetEmail(email)
+                  .sendPwdResetEmail(email, actionCodeSettings)
                   .then((response) => {
                     navigate("/login");
                     toast({

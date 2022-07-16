@@ -16,20 +16,21 @@ import { useNavigate } from "react-router-dom";
 import { useProvideAuth } from "hooks/useAuth";
 import { Helmet } from "react-helmet";
 import PasswordInput from "./PasswordInput";
-
+import LoadingPage from "../LoadingPage";
 export default function ResetPassword() {
   const toast = useToast();
   const navigate = useNavigate();
   const authentication = useProvideAuth();
 
   const [email, setEmail] = useState("");
-  const [errorTitle, setErrorTitle] = useState("Password reset code is invalid.");
+  const [errorTitle, setErrorTitle] = useState("Loading");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const isError = confirmPassword.length > 0 && password !== confirmPassword;
 
   const urlParams = new URLSearchParams(window.location.search);
   const oobCode = urlParams.get('oobCode');
+  const continueUrl = urlParams.get('continueUrl');
 
   useEffect(() => {
     if (oobCode !== null) {
@@ -133,12 +134,58 @@ export default function ResetPassword() {
                         authentication
                           .confirmPwdReset(oobCode, password)
                           .then((response) => {
-                            navigate("/login");
                             toast({
-                              title: "Password successfully reset",
-                              status: "info",
+                              title: "Password reset!",
+                              status: "success",
                               isClosable: true,
                             });
+                            return response;
+                          })
+                          .then((response) => {
+                            // return; // this is only for deployment convenience
+                            if (continueUrl !== null) {
+                              window.location.replace(continueUrl);
+                            }
+                          })
+                          .then((response) => {
+                            return; // comment this line for auto sign-in
+                            // only works if link is not replaced by code above
+                            authentication
+                              .signin(email, password)
+                              .then((response) => {
+                                navigate("/dashboard");
+                                toast({
+                                  title: "Logged in!",
+                                  status: "success",
+                                  isClosable: true,
+                                });
+                              })
+                              .catch((error) => {
+                                let errorTitle = "";
+                                switch (error.code) {
+                                  case "auth/invalid-email":
+                                    errorTitle = "Invalid email";
+                                    break;
+                                  case "auth/user-disabled":
+                                    errorTitle = "User is disabled";
+                                    break;
+                                  case "auth/user-not-found":
+                                    errorTitle = "Incorrect email";
+                                    break;
+                                  case "auth/wrong-password":
+                                    errorTitle = "Incorrect password";
+                                    break;
+                                  default:
+                                    console.log(error.code);
+                                    errorTitle = "Error";
+                                    break;
+                                }
+                                toast({
+                                  title: errorTitle,
+                                  status: "error",
+                                  isClosable: true,
+                                });
+                              });
                           })
                           .catch((error) => {
                             let errorTitle = "";
@@ -174,7 +221,8 @@ export default function ResetPassword() {
                   Reset
                 </Button>
               </VStack>
-            ) : (
+            ) :
+            (
               <VStack
                 boxShadow="base"
                 borderRadius="md"
@@ -185,7 +233,7 @@ export default function ResetPassword() {
                 maxW="lg"
               >
                 <Container>
-                  {errorTitle}
+                  {errorTitle === "Loading" ? (<LoadingPage />) : errorTitle}
                 </Container>
               </VStack>
             )}

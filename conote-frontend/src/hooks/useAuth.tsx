@@ -15,6 +15,7 @@ import {
   onAuthStateChanged,
   User,
   verifyPasswordResetCode,
+  ActionCodeSettings,
 } from "firebase/auth";
 import {
   getDatabase,
@@ -112,8 +113,8 @@ export function useProvideAuth() {
       setUser(false);
     });
   };
-  const sendPwdResetEmail = (email: string) => {
-    return sendPasswordResetEmail(auth, email).then(() => {
+  const sendPwdResetEmail = (email: string, actionCodeSettings?: ActionCodeSettings | undefined) => {
+    return sendPasswordResetEmail(auth, email, actionCodeSettings).then(() => {
       return true;
     });
   };
