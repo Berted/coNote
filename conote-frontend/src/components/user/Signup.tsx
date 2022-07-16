@@ -41,15 +41,6 @@ function SignupForm(props: any) {
         minW="340px"
         maxW="lg"
       >
-        <FormControl id="fullname">
-          <FormLabel htmlFor="fullname">Your name</FormLabel>
-          <Input
-            value={fullname}
-            onChange={(e) => setFullname(e.target.value)}
-            type="fullname"
-            placeholder="John Doe"
-          />
-        </FormControl>
         <FormControl id="email">
           <FormLabel htmlFor="email">Email address</FormLabel>
           <Input
@@ -57,6 +48,15 @@ function SignupForm(props: any) {
             onChange={(e) => setEmail(e.target.value)}
             type="email"
             placeholder="johndoe@example.com"
+          />
+        </FormControl>
+        <FormControl id="fullname">
+          <FormLabel htmlFor="fullname">Your name</FormLabel>
+          <Input
+            value={fullname}
+            onChange={(e) => setFullname(e.target.value)}
+            type="fullname"
+            placeholder="John Doe"
           />
         </FormControl>
         <FormControl id="password">
