@@ -9,6 +9,8 @@ import {
   Input,
   Button,
   useToast,
+  FormHelperText,
+  FormErrorMessage,
 } from "@chakra-ui/react";
 import { Link as RouteLink } from "react-router-dom";
 import { useState } from "react";
@@ -18,9 +20,12 @@ import { Helmet } from "react-helmet";
 import PasswordInput from "./PasswordInput";
 
 function SignupForm(props: any) {
+  const toast = useToast();
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const isError = confirmPassword.length > 0 && password !== confirmPassword;
 
   return (
     <>
@@ -62,9 +67,35 @@ function SignupForm(props: any) {
             type="password"
           />
         </FormControl>
+        <FormControl id="confirm-password" isInvalid={isError} >
+          <FormLabel htmlFor="confirm-password">Confirm password</FormLabel>
+          <PasswordInput
+            value={confirmPassword}
+            onChange={(e: any) => setConfirmPassword(e.target.value)}
+            type="password"
+          />
+          {!isError ?
+            (
+              <FormHelperText>
+                <br></br>
+              </FormHelperText>
+            ) : (
+              <FormErrorMessage>
+                Password does not match.
+              </FormErrorMessage>
+            )
+          }
+        </FormControl>
+
         <Button
           onClick={() =>
-            props.onButtonClick(email, password, { fullname: fullname })
+            password === confirmPassword ?
+              props.onButtonClick(email, password, { fullname: fullname })
+              : toast({
+                title: "Password confirmation doesn't match",
+                status: "error",
+                isClosable: true,
+              })
           }
           colorScheme="blue"
           boxShadow="base"
@@ -77,7 +108,7 @@ function SignupForm(props: any) {
   );
 }
 
-export default function Login() {
+export default function Signup() {
   const toast = useToast();
   const navigate = useNavigate();
   const authentication = useProvideAuth();

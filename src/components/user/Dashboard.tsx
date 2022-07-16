@@ -30,7 +30,7 @@ export default function Dashboard() {
   const [docType, setDocType] = useState<"owned" | "shared">("owned");
   const [tagsFilter, setTagsFilter] = useState<string[]>([]);
   const [tagsFilterOption, setTagsFilterOption] = useState("and");
-  const [sorter, setSorter] = useState("time");
+  const [sorter, setSorter] = useState("time-dec");
   const [documents, setDocuments] = useState<string[] | undefined>(undefined);
 
   useEffect(() => {
@@ -115,14 +115,17 @@ export default function Dashboard() {
               docs.reverse();
             }
             break;
-          case "time":
+          case "time-asc":
+          case "time-dec":
             docs.sort((a, b) => {
               if (comparator(a[3], b[3]) !== 0) {
                 return comparator(a[3], b[3]);
               }
               return comparator(a[0], b[0]);
             });
-            docs.reverse();
+            if (sorter === "time-dec") {
+              docs.reverse();
+            }
             break;
           default:
             break;
@@ -165,7 +168,7 @@ export default function Dashboard() {
               })}
           </SimpleGrid>
         </Box>
-      </> 
+      </>
     );
   }
 }
