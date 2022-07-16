@@ -142,50 +142,51 @@ export default function ResetPassword() {
                             return response;
                           })
                           .then((response) => {
-                            // return; // this is only for deployment convenience
-                            if (continueUrl !== null) {
+                            // for deployment convenience
+                            if (continueUrl !== null && (new URL(continueUrl)).host !== window.location.host) {
                               window.location.replace(continueUrl);
                             }
                           })
                           .then((response) => {
-                            return; // comment this line for auto sign-in
-                            // only works if link is not replaced by code above
-                            authentication
-                              .signin(email, password)
-                              .then((response) => {
-                                navigate("/dashboard");
-                                toast({
-                                  title: "Logged in!",
-                                  status: "success",
-                                  isClosable: true,
+                            // if current domain is not redirected, auto sign-in
+                            if (continueUrl === null || (new URL(continueUrl)).host === window.location.host) {
+                              authentication
+                                .signin(email, password)
+                                .then((response) => {
+                                  navigate("/dashboard");
+                                  toast({
+                                    title: "Logged in!",
+                                    status: "success",
+                                    isClosable: true,
+                                  });
+                                })
+                                .catch((error) => {
+                                  let errorTitle = "";
+                                  switch (error.code) {
+                                    case "auth/invalid-email":
+                                      errorTitle = "Invalid email";
+                                      break;
+                                    case "auth/user-disabled":
+                                      errorTitle = "User is disabled";
+                                      break;
+                                    case "auth/user-not-found":
+                                      errorTitle = "Incorrect email";
+                                      break;
+                                    case "auth/wrong-password":
+                                      errorTitle = "Incorrect password";
+                                      break;
+                                    default:
+                                      console.log(error.code);
+                                      errorTitle = "Error";
+                                      break;
+                                  }
+                                  toast({
+                                    title: errorTitle,
+                                    status: "error",
+                                    isClosable: true,
+                                  });
                                 });
-                              })
-                              .catch((error) => {
-                                let errorTitle = "";
-                                switch (error.code) {
-                                  case "auth/invalid-email":
-                                    errorTitle = "Invalid email";
-                                    break;
-                                  case "auth/user-disabled":
-                                    errorTitle = "User is disabled";
-                                    break;
-                                  case "auth/user-not-found":
-                                    errorTitle = "Incorrect email";
-                                    break;
-                                  case "auth/wrong-password":
-                                    errorTitle = "Incorrect password";
-                                    break;
-                                  default:
-                                    console.log(error.code);
-                                    errorTitle = "Error";
-                                    break;
-                                }
-                                toast({
-                                  title: errorTitle,
-                                  status: "error",
-                                  isClosable: true,
-                                });
-                              });
+                            }
                           })
                           .catch((error) => {
                             let errorTitle = "";
@@ -213,6 +214,7 @@ export default function ResetPassword() {
                               isClosable: true,
                             });
                           });
+
                   }}
                   colorScheme="blue"
                   boxShadow="base"
