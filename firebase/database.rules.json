@@ -13,6 +13,11 @@
         },
         "email": {
           ".read": true
+        },
+        "shared_documents": {
+          "$id": {
+            ".write": "auth !== null && root.child('docs/' + $id + '/roles/' + auth.uid).val() === 'owner'"
+          }
         }
       }
     },
@@ -22,8 +27,8 @@
     "docs": {
       "$id": {
         ".read": "data.child('public').val() === true || (auth !== null && data.child('roles').hasChild(auth.uid))",
-        ".write": "auth !== null && (!data.exists() || (data.child('roles').child(auth.uid).val() === 'owner'))",
-        //".write": "auth !== null && (!data.exists() || (data.child('roles').child(auth.uid).val() === 'owner' && !newData.exists()))",
+        //".write": "auth !== null && (!data.exists() || (data.child('roles').child(auth.uid).val() === 'owner'))",
+        ".write": "auth !== null && (!data.exists() || (data.child('roles').child(auth.uid).val() === 'owner' && !newData.exists()))",
         "title": {
           ".write": "auth !== null && data.parent().child('roles').child(auth.uid).val() !== 'viewer'" 
         },
@@ -33,6 +38,9 @@
         },
         "roles": {
           ".write": "auth !== null && data.child(auth.uid).val() === 'owner'" 
+        },
+        "public": {
+          ".write": "auth !== null && root.child('docs/' + $id + '/roles/' + auth.uid).val() === 'owner'" 
         },
           
         // Based on https://github.com/FirebaseExtended/firepad/blob/master/examples/security/validate-auth.json
