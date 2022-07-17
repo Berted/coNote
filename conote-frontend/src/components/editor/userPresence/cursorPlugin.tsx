@@ -12,19 +12,29 @@ interface CursorData {
 
 // Styling heavily inspirsed from Chakra UI's Tooltip theming.
 const cursorTooltipBaseTheme = EditorView.baseTheme({
-  ".cm-tooltip.cm-other-cursor-element": {
-    height: "1.275em",
+  ".cm-tooltip.cm-other-cursor-content": {
+    height: "1.3em",
+    fontFamily: "monospace",
+    padding: "2px 4px",
+    left: "-4px",
+    border: "0px",
+    zIndex: "4000",
+    backgroundColor: "transparent",
+  },
+  ".cm-tooltip.cm-other-cursor-content .cm-other-cursor-element": {
+    height: "1.3em",
     width: "0",
+    position: "absolute",
     fontFamily: "monospace",
     borderRight: "0px",
     borderTop: "0px",
     borderBottom: "0px",
     borderLeft: "2px solid",
-    marginLeft: "-1px",
-    marginRight: "-1px",
+    top: "0px",
+    left: "4px",
     zIndex: "4000",
   },
-  ".cm-tooltip.cm-other-cursor-element .cm-other-cursor-tooltip": {
+  ".cm-tooltip.cm-other-cursor-content .cm-other-cursor-tooltip": {
     position: "absolute",
     whiteSpace: "nowrap",
     maxWidth: "200px",
@@ -34,8 +44,8 @@ const cursorTooltipBaseTheme = EditorView.baseTheme({
     borderRadius: "2px",
     boxShadow:
       "rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px",
-    top: "-22px",
-    left: "-2px",
+    top: "-21px",
+    left: "4px",
     color: "rgba(255, 255, 255, 0.92)",
     fontFamily: "'Inter', sans-serif",
     fontWeight: "500",
@@ -94,9 +104,14 @@ const cursorField = (uid: string | undefined) => {
             pos: x.pos,
             create: () => {
               let dom = document.createElement("div");
-              dom.className = "cm-other-cursor-element";
-              dom.id = "cm-other-cursor-element-" + x.uid;
-              dom.style.borderLeftColor = x.color;
+              dom.className = "cm-other-cursor-content";
+              dom.id = "cm-other-cursor-content-" + x.uid;
+
+              let cursor = document.createElement("div");
+              cursor.className = "cm-other-cursor-element";
+              cursor.id = "cm-other-cursor-element-" + x.uid;
+              cursor.style.borderLeftColor = x.color;
+              dom.appendChild(cursor);
 
               let tooltip = document.createElement("div");
               let isFirstLine: boolean = state.doc.lineAt(x.pos).number === 1;
@@ -136,7 +151,7 @@ const cursorField = (uid: string | undefined) => {
                 }, 750);
               });
 
-              let offset = { x: 0, y: -16.5 };
+              let offset = { x: -4, y: -16.8 };
               return { dom, offset };
             },
           };
