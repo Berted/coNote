@@ -13,6 +13,7 @@ export default function PasswordInput(props: any) {
   return (
     <InputGroup size="md">
       <Input
+        value={props.value}
         onChange={(e) => props.onChange(e)}
         pr="4.5rem"
         type={show ? "text" : "password"}

@@ -19,17 +19,50 @@ import {
   FormLabel,
   Input,
   ModalFooter,
+  useToast,
+  FormHelperText,
+  FormErrorMessage,
+  InputGroup,
+  InputLeftElement,
+  Icon,
 } from "@chakra-ui/react";
 
 import { useNavigate } from "react-router-dom";
 import { useProvideAuth } from "hooks/useAuth";
-import { getDatabase, onValue, ref, set } from "firebase/database";
-import { useEffect, useState } from "react";
+import { getDatabase, onValue, push, ref, set } from "firebase/database";
+import { useEffect, useRef, useState } from "react";
+import firebase from "firebase/compat/app";
+import "firebase/compat/storage";
+import PasswordInput from "./PasswordInput";
+import { FiFile } from 'react-icons/fi';
 
 function EditUserButton() {
   const auth = useProvideAuth();
+  const toast = useToast();
+  const storage = firebase.storage();
+
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const [pass, setPass] = useState<string>(""); // current password
+  const [authenticated, setAuthenticated] = useState<boolean>(false);
+
   const [fullname, setFullname] = useState<string | undefined>(undefined);
+
+  const [password, setPassword] = useState(""); // new password
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const isError = confirmPassword.length > 0 && password !== confirmPassword;
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [file, setFile] = useState<File | undefined>(undefined);
+
+  const resetValues = () => {
+    setPass("");
+    setAuthenticated(false);
+    setFullname(auth.userData?.fullname);
+    setPassword("");
+    setConfirmPassword("");
+    setFile(undefined);
+  };
 
   if (!auth.user) return <></>;
 
@@ -40,7 +73,7 @@ function EditUserButton() {
     <>
       <Button
         onClick={() => {
-          setFullname(auth.userData?.fullname);
+          resetValues();
           onOpen();
         }}
         boxShadow="base"
@@ -59,37 +92,229 @@ function EditUserButton() {
           </ModalHeader>
           <ModalBody>
             <VStack>
-              <FormControl>
-                <FormLabel>
-                  Email address
-                </FormLabel>
-                <Input
-                  value={email === null ? "" : email}
-                  isDisabled={true}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>
-                  Your name
-                </FormLabel>
-                <Input
-                  value={fullname}
-                  onChange={e => setFullname(e.target.value)}
-                  type="fullname"
-                  placeholder="John Doe"
-                />
-              </FormControl>
+              {!authenticated ? (
+                <FormControl>
+                  <FormLabel>
+                    Re-enter password
+                  </FormLabel>
+                  <PasswordInput
+                    value={pass}
+                    onChange={(e: any) => setPass(e.target.value)}
+                    type="password"
+                  />
+                </FormControl>
+              ) : (
+                <>
+                  <FormControl>
+                    <FormLabel>
+                      Email address
+                    </FormLabel>
+                    <Input
+                      value={email === null ? "" : email}
+                      isDisabled={true}
+                    />
+                  </FormControl>
+                  <FormControl>
+                    <FormLabel>
+                      Your name
+                    </FormLabel>
+                    <Input
+                      value={fullname}
+                      onChange={e => setFullname(e.target.value)}
+                      type="fullname"
+                      placeholder="John Doe"
+                    />
+                  </FormControl>
+                  <FormControl id="password">
+                    <FormLabel htmlFor="password">Password</FormLabel>
+                    <PasswordInput
+                      value={password}
+                      onChange={(e: any) => setPassword(e.target.value)}
+                      type="password"
+                    />
+                  </FormControl>
+                  <FormControl id="confirm-password" isInvalid={isError} >
+                    <FormLabel htmlFor="confirm-password">Confirm password</FormLabel>
+                    <PasswordInput
+                      value={confirmPassword}
+                      onChange={(e: any) => setConfirmPassword(e.target.value)}
+                      type="password"
+                    />
+                    {!isError ?
+                      (
+                        <FormHelperText>
+                          <br></br>
+                        </FormHelperText>
+                      ) : (
+                        <FormErrorMessage>
+                          Password does not match.
+                        </FormErrorMessage>
+                      )
+                    }
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>
+                      Change avatar
+                    </FormLabel>
+                    <InputGroup>
+                      <InputLeftElement
+                        pointerEvents="none">
+                        <Icon as={FiFile} />
+                      </InputLeftElement>
+                      <input
+                        type='file'
+                        ref={inputRef}
+                        accept={'image/*'}
+                        style={{ display: 'none' }}
+                        onChange={(e) => {
+                          if (e.target.files) {
+                            setFile(e.target.files[0]);
+                          }
+                        }}
+                      />
+                      <Input
+                        placeholder={"Your file ..."}
+                        onClick={() => {
+                          if (inputRef.current !== null) {
+                            inputRef.current.click();
+                          }
+                        }}
+                        readOnly={true}
+                        value={file ? file.name : ''}
+                      />
+                    </InputGroup>
+                  </FormControl>
+                </>
+              )
+              }
             </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" onClick={() => {
-              set(ref(getDatabase(), `users/${uid}/fullname`), fullname)
-                .then(() => setFullname(fullname))
-                .catch((e) => console.log("Set fullname error: " + e));
-              onClose();
-            }}>
-              Save
+            <Button onClick={onClose} mr="3">
+              Cancel
             </Button>
+            {!authenticated ? (
+              <Button
+                onClick={() => {
+                  if (auth.user) {
+                    auth.reauthenticateUser(auth.user, pass)
+                      .then((response) => {
+                        setPassword(pass);
+                        setConfirmPassword(pass);
+                      })
+                      .then((response) => {
+                        setAuthenticated(true);
+                      })
+                      .catch((error) => {
+                        let errorTitle = "";
+                        switch (error.code) {
+                          case "auth/wrong-password":
+                            errorTitle = "Wrong password"
+                            break;
+                          case "auth/too-many-requests":
+                            errorTitle = "Too many attempts!"
+                            break;
+                          default:
+                            errorTitle = "Error";
+                            console.log(error.code)
+                            break;
+                        }
+                        toast({
+                          title: errorTitle,
+                          status: "error",
+                          isClosable: true,
+                        });
+                      });
+                  }
+                }}
+                colorScheme="blue"
+              >
+                Next
+              </Button>
+            ) : (
+              <Button colorScheme="blue" onClick={() => {
+                if (password !== confirmPassword) {
+                  toast({
+                    title: "Password confirmation doesn't match",
+                    status: "error",
+                    isClosable: true,
+                  });
+                  return;
+                }
+                if (auth.user) {
+                  auth.reauthenticateUser(auth.user, pass)
+                    .then((response) => {
+                      if (auth.user) {
+                        auth.changePassword(auth.user, password)
+                          .then(async (response) => {
+                            set(ref(getDatabase(), `users/${uid}/fullname`), fullname)
+                              .then(() => setFullname(fullname))
+                              .catch((e) => console.log("Set fullname error: " + e));
+                            if (file) {
+                              const newImgName = push(ref(getDatabase(), `img_names`), true);
+                              await storage.ref(`/${newImgName.key}`).put(file);
+                              set(ref(getDatabase(), `users/${uid}/img_url`),
+                                await storage.ref(`/${newImgName.key}`).getDownloadURL())
+                                .catch((e) => console.log("Set url error: " + e));
+                            }
+                          })
+                          .then((response) => {
+                            resetValues();
+                            onClose();
+                          })
+                          .catch((error) => {
+                            let errorTitle = "";
+                            switch (error.code) {
+                              case "auth/email-already-in-use":
+                                errorTitle = "Email is already in use";
+                                break;
+                              case "auth/invalid-email":
+                                errorTitle = "Invalid email";
+                                break;
+                              case "auth/weak-password":
+                                errorTitle = "Password must contain at least 6 characters";
+                                break;
+                              default:
+                                console.log(error.code);
+                                errorTitle = "Error";
+                                break;
+                            }
+                            toast({
+                              title: errorTitle,
+                              status: "error",
+                              isClosable: true,
+                            });
+                          });
+                      }
+                    })
+                    .catch((error) => {
+                      // This shouldn't trigger during intended use
+                      let errorTitle = "";
+                      switch (error.code) {
+                        case "auth/wrong-password":
+                          errorTitle = "Wrong password"
+                          break;
+                        case "auth/too-many-requests":
+                          errorTitle = "Too many attempts!"
+                          break;
+                        default:
+                          errorTitle = "Error";
+                          console.log(error.code)
+                          break;
+                      }
+                      toast({
+                        title: errorTitle,
+                        status: "error",
+                        isClosable: true,
+                      });
+                    });
+                }
+              }}>
+                Save
+              </Button>
+            )
+            }
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -107,6 +332,7 @@ export default function UserButton(props: any) {
       <Popover placement="bottom-end" autoFocus={true}>
         <PopoverTrigger>
           <Avatar
+            src={auth.userData?.img_url}
             bg="blue.400"
             transition="background-color 100ms linear"
             _hover={{
