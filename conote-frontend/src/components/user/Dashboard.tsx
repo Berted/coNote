@@ -25,6 +25,8 @@ import { useEffect, useState } from "react";
 import { child, get, getDatabase, ref } from "firebase/database";
 import { Helmet } from "react-helmet";
 
+import "../styles/noselect.css";
+
 export default function Dashboard() {
   const { userData, ...auth } = useProvideAuth();
   const [docType, setDocType] = useState<"owned" | "shared">("owned");
@@ -167,10 +169,30 @@ export default function Dashboard() {
                 return <DocCard key={"doc-card-" + item} docID={item} />;
               })}
           </SimpleGrid>
+
+          {documents !== undefined && Object.values(documents).length === 0 && (
+            <NoDocumentComponent docType={docType} />
+          )}
         </Box>
       </>
     );
   }
+}
+
+function NoDocumentComponent({ docType, ...props }: any) {
+  return (
+    <VStack
+      textColor="gray.300"
+      mt="30vh"
+      spacing="1"
+      className="noselect"
+      fontSize="lg"
+    >
+      <Heading fontSize="5xl">No notes here.</Heading>
+      {docType === "owned" && <Text>Start writing notes!</Text>}
+      {docType === "shared" && <Text>Get others to share notes!</Text>}
+    </VStack>
+  );
 }
 
 /*
