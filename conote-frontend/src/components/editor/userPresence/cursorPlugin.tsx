@@ -31,7 +31,7 @@ const cursorTooltipBaseTheme = EditorView.baseTheme({
     borderBottom: "0px",
     borderLeft: "2px solid",
     top: "0px",
-    left: "4px",
+    left: "3px",
     zIndex: "4000",
   },
   ".cm-tooltip.cm-other-cursor-content .cm-other-cursor-tooltip": {
@@ -45,7 +45,7 @@ const cursorTooltipBaseTheme = EditorView.baseTheme({
     boxShadow:
       "rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px",
     top: "-21px",
-    left: "4px",
+    left: "3px",
     color: "rgba(255, 255, 255, 0.92)",
     fontFamily: "'Inter', sans-serif",
     fontWeight: "500",
