@@ -60,7 +60,7 @@ function NewDocButton(props: any) {
         [auth.user.uid]: "owner",
       },
       timestamp: serverTimestamp(),
-      title: title,
+      title: title || "Untitled",
     });
 
     set(
