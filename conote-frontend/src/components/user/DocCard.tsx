@@ -216,10 +216,13 @@ function EditTagsButton({
                 <Input
                   autoFocus
                   placeholder="Document title"
-                  value={title}
+                  defaultValue={title}
                   onChange={({ target: { value } }) => {
-                    set(ref(getDatabase(), `docs/${docID}/title`), value)
-                      .then(() => setTitle(value))
+                    set(
+                      ref(getDatabase(), `docs/${docID}/title`),
+                      value || "Untitled"
+                    )
+                      .then(() => setTitle(value || "Untitled"))
                       .catch((e) => console.log("Set title error: " + e));
                   }}
                   variant="outline"
