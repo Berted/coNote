@@ -131,7 +131,7 @@ export default function ExportButton({ docContent, ...props }: any) {
               icon={<IoDocumentTextOutline size="18" />}
               onClick={handleDownloadRHTML}
             >
-              Export as Raw-HTML file
+              Export as HTML file (Raw)
             </MenuItem>
           </Tooltip>
 
