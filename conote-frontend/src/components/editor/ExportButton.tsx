@@ -9,6 +9,7 @@ import {
   MenuOptionGroup,
   MenuDivider,
   useToast,
+  Tooltip,
 } from "@chakra-ui/react";
 import {
   IoShare,
@@ -116,18 +117,24 @@ export default function ExportButton({ docContent, ...props }: any) {
           >
             Export as Markdown file (.md)
           </MenuItem>
-          <MenuItem
-            icon={<IoDocumentText size="18" />}
-            onClick={handleDownloadHTML}
-          >
-            Export as HTML file
-          </MenuItem>
-          <MenuItem
-            icon={<IoDocumentTextOutline size="18" />}
-            onClick={handleDownloadRHTML}
-          >
-            Export as Raw-HTML file
-          </MenuItem>
+          <Tooltip label="As seen in preview." placement="left">
+            <MenuItem
+              icon={<IoDocumentText size="18" />}
+              onClick={handleDownloadHTML}
+            >
+              Export as HTML file
+            </MenuItem>
+          </Tooltip>
+
+          <Tooltip label="No CSS styling." placement="left">
+            <MenuItem
+              icon={<IoDocumentTextOutline size="18" />}
+              onClick={handleDownloadRHTML}
+            >
+              Export as HTML file (Raw)
+            </MenuItem>
+          </Tooltip>
+
           <MenuItem
             icon={<AiOutlineFilePdf size="18" />}
             onClick={handleDownloadPDF(toast)}
