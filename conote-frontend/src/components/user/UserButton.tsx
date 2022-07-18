@@ -78,7 +78,7 @@ function EditUserButton() {
         }}
         boxShadow="base"
         padding="0px 1.5em"
-        m={1}
+        m={1.5}
       >
         Edit
       </Button>
@@ -198,6 +198,14 @@ function EditUserButton() {
               <Button
                 onClick={() => {
                   if (auth.user) {
+                    if (pass.length === 0) {
+                      toast({
+                        title: "Wrong password",
+                        status: "error",
+                        isClosable: true,
+                      });
+                      return;
+                    }
                     auth.reauthenticateUser(auth.user, pass)
                       .then((response) => {
                         setPassword(pass);
@@ -335,8 +343,11 @@ export default function UserButton(props: any) {
             src={auth.userData?.img_url}
             bg="blue.400"
             transition="background-color 100ms linear"
+            // _hover={{
+            //   bg: "blue.600",
+            // }}
             _hover={{
-              bg: "blue.600",
+              transform: "scale(1.05)",
             }}
             role="button"
           />
@@ -363,7 +374,7 @@ export default function UserButton(props: any) {
               colorScheme="blue"
               boxShadow="base"
               padding="0px 1.5em"
-              m={1}
+              m={1.5}
             >
               Logout
             </Button>
