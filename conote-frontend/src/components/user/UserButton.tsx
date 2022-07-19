@@ -259,7 +259,7 @@ function EditUserButton() {
                             set(ref(getDatabase(), `users/${uid}/fullname`), fullname)
                               .then(() => setFullname(fullname))
                               .catch((e) => console.log("Set fullname error: " + e));
-                            if (file) {
+                            if (file && file.type.split('/')[0] === 'image') {
                               const newImgName = push(ref(getDatabase(), `img_names`), true);
                               await storage.ref(`/${newImgName.key}`).put(file);
                               set(ref(getDatabase(), `users/${uid}/img_url`),
