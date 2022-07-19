@@ -1,16 +1,18 @@
 import { HStack, Box, VStack } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-
+import firebase from "firebase/compat/app";
 import "firebase/compat/database";
 import EditorNavbar from "./EditorNavbar";
 import MarkdownPreview from "./MarkdownPreview";
 import useFirepad from "./useFirepad";
 import LoadingPage from "components/LoadingPage";
 import { Helmet } from "react-helmet";
-import { getDatabase, ref, get } from "firebase/database";
+import { getDatabase, ref, get, push, set } from "firebase/database";
 
 const Editor = () => {
+  const storage = firebase.storage();
+
   const editorRef = useRef<HTMLDivElement>(null);
   const params = useParams();
   const { view, docContent, available, userRole, userPresence } = useFirepad(
@@ -51,7 +53,22 @@ const Editor = () => {
         <HStack verticalAlign="top" textAlign="left" hidden={!available}>
           <VStack w={editSize + "%"} position="fixed" top="73px">
             <Box w="100%" borderRightWidth="1px" verticalAlign="top">
-              <Box ref={editorRef} />
+              <Box ref={editorRef} onPaste={async (args) => {
+                if (!view) return;
+                let clipboard = args.clipboardData;
+                if (clipboard.getData("text").length === 0) { // empty string
+                  for (let i = 0; i < clipboard.files.length; i += 1) {
+                    let file = clipboard.files[i];
+                    if (file && file.type.split('/')[0] === 'image') {
+                      const newImgName = push(ref(getDatabase(), `img_names`), true);
+                      await storage.ref(`/${newImgName.key}`).put(file);
+                      let link = await storage.ref(`/${newImgName.key}`).getDownloadURL();
+                      let changes = view.state.replaceSelection("![](" + link + ")");
+                      view.dispatch(changes);
+                    }
+                  }
+                }
+              }} />
             </Box>
           </VStack>
           <VStack w={editSize + "%"}>
