@@ -364,7 +364,7 @@ function parseTime(timeStamp: number | undefined): string {
   }
 }
 
-export default function DocCard({ docID, ...props }: any) {
+export default function DocCard({ docID, docType, ...props }: any) {
   const auth = useProvideAuth();
   const [title, setTitle] = useState<string | undefined>(undefined);
   const [timestamp, setTimestamp] = useState<number | undefined>(undefined);
@@ -453,7 +453,7 @@ export default function DocCard({ docID, ...props }: any) {
         <Text>Modified {parseTime(timestamp)} ago</Text>
       </HStack>
       <Flex w="vw" mt="10px" mr="-5px" flexDirection="row-reverse">
-        <DeleteDocButton docID={docID} title={title} />
+        {docType === "owned" && <DeleteDocButton docID={docID} title={title} />}
         <EditTagsButton
           docID={docID}
           title={title}
@@ -461,11 +461,17 @@ export default function DocCard({ docID, ...props }: any) {
           tags={tags}
           setTags={setTags}
         />
-        <Spacer />
-        <HStack mt="1" overflow="hidden">
+        <Spacer minW="10px" />
+        <HStack mt="1" overflow="hidden" borderRadius="xl">
           {tags !== undefined &&
             Object.values(tags).map((tag: any) => {
-              return <ColorfulTag key={docID + "-tag-" + tag} tag={tag} />;
+              return (
+                <ColorfulTag
+                  key={docID + "-tag-" + tag}
+                  tag={tag}
+                  flexShrink={0}
+                />
+              );
             })}
         </HStack>
       </Flex>
