@@ -1,4 +1,4 @@
-import { HStack, Box, VStack } from "@chakra-ui/react";
+import { HStack, Box, VStack, Spacer } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -54,12 +54,13 @@ const Editor = () => {
               <Box ref={editorRef} />
             </Box>
           </VStack>
-          <VStack w={editSize + "%"}>
-            <Box w="100%" verticalAlign="top"></Box>
-          </VStack>
-          <VStack w={100 - editSize + "%"} h="100%">
+          <Spacer />
+
+          <VStack w={100 - editSize + "%"} h="100%" overflow="auto">
             <Box w="100%" verticalAlign="top" mt="50">
-              <MarkdownPreview docContent={docContent} />
+              {editSize !== 100 && (
+                <MarkdownPreview docContent={docContent} zIndex={-5} />
+              )}
             </Box>
           </VStack>
         </HStack>
