@@ -1,4 +1,4 @@
-import { HStack, Box, VStack } from "@chakra-ui/react";
+import { HStack, Box, VStack, useToast, ToastId } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import firebase from "firebase/compat/app";
@@ -13,6 +13,8 @@ import { getDatabase, ref, get, push, set } from "firebase/database";
 
 const Editor = () => {
   const storage = firebase.storage();
+  const toast = useToast();
+  const toastRef = useRef<ToastId[]>([]);
 
   const editorRef = useRef<HTMLDivElement>(null);
   const params = useParams();
@@ -61,11 +63,21 @@ const Editor = () => {
                   for (let i = 0; i < clipboard.files.length; i += 1) {
                     let file = clipboard.files[i];
                     if (file && file.type.split('/')[0] === 'image') {
+                      toastRef.current.push(toast({
+                        title: "Uploading iimage...",
+                        status: "loading",
+                        isClosable: false,
+                        duration: null,
+                      }));
                       const newImgName = push(ref(getDatabase(), `img_names`), true);
-                      await storage.ref(`/${newImgName.key}`).put(file);
-                      let link = await storage.ref(`/${newImgName.key}`).getDownloadURL();
+                      await storage.ref(`docs/${params.docID}/${newImgName.key}`).put(file);
+                      let link = await storage.ref(`docs/${params.docID}/${newImgName.key}`).getDownloadURL();
                       let changes = view.state.replaceSelection("![](" + link + ")");
                       view.dispatch(changes);
+                      if (toastRef.current && toastRef.current.length > 0) {
+                        toast.close(toastRef.current[0]);
+                        toastRef.current.splice(0, 1);
+                      }
                     }
                   }
                 }
