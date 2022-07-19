@@ -260,10 +260,9 @@ function EditUserButton() {
                               .then(() => setFullname(fullname))
                               .catch((e) => console.log("Set fullname error: " + e));
                             if (file && file.type.split('/')[0] === 'image') {
-                              const newImgName = push(ref(getDatabase(), `img_names`), true);
-                              await storage.ref(`/${newImgName.key}`).put(file);
+                              await storage.ref(`users/${uid}`).put(file);
                               set(ref(getDatabase(), `users/${uid}/img_url`),
-                                await storage.ref(`/${newImgName.key}`).getDownloadURL())
+                                await storage.ref(`users/${uid}`).getDownloadURL())
                                 .catch((e) => console.log("Set url error: " + e));
                             }
                           })
