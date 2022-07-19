@@ -2,6 +2,7 @@ import { HStack, Box, VStack } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import firebase from "firebase/compat/app";
+import "firebase/compat/storage";
 import "firebase/compat/database";
 import EditorNavbar from "./EditorNavbar";
 import MarkdownPreview from "./MarkdownPreview";
