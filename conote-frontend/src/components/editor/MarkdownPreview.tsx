@@ -12,8 +12,9 @@ import rehypeRaw from "rehype-raw";
 import rehypeSlug from "rehype-slug-custom-id";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import "katex/dist/katex.min.css";
+import React from "react";
 
-export default function MarkdownPreview({ docContent, ...props }: any) {
+function MarkdownPreview({ docContent, ...props }: any) {
   return (
     <>
       <ReactMarkdown
@@ -105,3 +106,5 @@ export default function MarkdownPreview({ docContent, ...props }: any) {
     </>
   );
 }
+
+export default React.memo(MarkdownPreview);
