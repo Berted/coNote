@@ -159,14 +159,25 @@ export default function Dashboard() {
           />
 
           <SimpleGrid
-            minChildWidth="240px"
+            minChildWidth="300px"
+            maxWidth={`${
+              documents !== undefined
+                ? Object.values(documents).length * 500 + 20
+                : 0
+            }px`}
             paddingX="7"
             marginTop="12vh"
             gap="5"
           >
             {documents !== undefined &&
               Object.values(documents).map((item) => {
-                return <DocCard key={"doc-card-" + item} docID={item} />;
+                return (
+                  <DocCard
+                    key={"doc-card-" + item}
+                    docID={item}
+                    docType={docType}
+                  />
+                );
               })}
           </SimpleGrid>
 
