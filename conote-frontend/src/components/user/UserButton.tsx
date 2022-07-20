@@ -25,6 +25,7 @@ import {
   InputGroup,
   InputLeftElement,
   Icon,
+  ToastId,
 } from "@chakra-ui/react";
 
 import { useNavigate } from "react-router-dom";
@@ -54,6 +55,8 @@ function EditUserButton() {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | undefined>(undefined);
+
+  const toastRef = useRef<ToastId>();
 
   const resetValues = () => {
     setPass("");
@@ -260,11 +263,20 @@ function EditUserButton() {
                               .then(() => setFullname(fullname))
                               .catch((e) => console.log("Set fullname error: " + e));
                             if (file && file.type.split('/')[0] === 'image') {
+                              toastRef.current = toast({
+                                title: "Saving...",
+                                status: "loading",
+                                isClosable: false,
+                                duration: null,
+                              });
                               const storageRef = storage.ref(`users/${uid}/avatar`);
                               await storageRef.put(file);
                               set(ref(getDatabase(), `users/${uid}/img_url`),
                                 await storageRef.getDownloadURL())
                                 .catch((e) => console.log("Set url error: " + e));
+                              if (toastRef.current) {
+                                toast.close(toastRef.current);
+                              }
                             }
                           })
                           .then((response) => {
