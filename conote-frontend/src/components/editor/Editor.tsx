@@ -37,6 +37,17 @@ const Editor = () => {
     });
   }, []);
 
+  const [owner, setOwner] = useState<string>(""); // document owner
+  useEffect(() => {
+    get(ref(getDatabase(), `docs/${params.docID}/roles`)).then((snapshot) => {
+      snapshot.forEach(userID => {
+        if (userID.key && userID.val() === "owner") {
+          setOwner(userID.key);
+        }
+      })
+    })
+  }, []);
+
   /* TODO: Crazy hack solution in terms of top position and calc(100vh - 73px) to get the editor dimensions exactly right.
   Can't wait for this to break in the future
   */
@@ -52,6 +63,7 @@ const Editor = () => {
           editSize={editSize}
           setEditSize={setEditSize}
           userPresence={userPresence}
+          owner={owner}
         />
         <HStack verticalAlign="top" textAlign="left" hidden={!available}>
           <VStack w={editSize + "%"} position="fixed" top="73px">
@@ -64,14 +76,23 @@ const Editor = () => {
                     let file = clipboard.files[i];
                     if (file && file.type.split('/')[0] === 'image') {
                       toastRef.current.push(toast({
-                        title: "Uploading iimage...",
+                        title: "Uploading image...",
                         status: "loading",
                         isClosable: false,
                         duration: null,
-                      }));
-                      const newImgName = push(ref(getDatabase(), `img_names`), true);
-                      await storage.ref(`docs/${params.docID}/${newImgName.key}`).put(file);
-                      let link = await storage.ref(`docs/${params.docID}/${newImgName.key}`).getDownloadURL();
+                      }));                      
+                      const newImgName = push(ref(getDatabase(), `docs/${params.docID}/images`), true);
+                      const storageRef = storage.ref(`docs/${params.docID}/images/${newImgName.key}`);
+                      await storageRef.put(file, {
+                        customMetadata: {
+                          'owner': owner
+                        },
+                      });
+                      
+                      // HACK: to reload images in `UploadImageButton` after upload is finished
+                      set(ref(getDatabase(), `docs/${params.docID}/images`), true); 
+                      
+                      let link = await storageRef.getDownloadURL();
                       let changes = view.state.replaceSelection("![](" + link + ")");
                       view.dispatch(changes);
                       if (toastRef.current && toastRef.current.length > 0) {

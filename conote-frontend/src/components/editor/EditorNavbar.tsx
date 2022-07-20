@@ -44,6 +44,7 @@ import EditorViewSlider from "./EditorViewSlider";
 import ExportButton from "./ExportButton";
 import { AiOutlineConsoleSql } from "react-icons/ai";
 import UserPresenceAvatars from "./userPresence/UserPresenceAvatars";
+import UploadImageButton from "./UploadImageButton";
 
 function validateEmail(email: string) {
   return email.match(
@@ -441,6 +442,7 @@ export default function EditorNavbar({
   editSize,
   setEditSize,
   userPresence,
+  owner,
   ...props
 }: any) {
   return (
@@ -463,6 +465,7 @@ export default function EditorNavbar({
       <HStack spacing="4">
         <HStack align="center" spacing="1">
           <UserPresenceAvatars userPresence={userPresence} />
+          <UploadImageButton docID={docID} owner={owner} />
           <ExportButton docContent={docContent} />
           <DocShareButton docID={docID} />
         </HStack>
