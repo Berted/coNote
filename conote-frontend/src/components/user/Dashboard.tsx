@@ -194,7 +194,7 @@ export default function Dashboard() {
           </SimpleGrid>
 
           {documents !== undefined && Object.values(documents).length === 0 && (
-            <NoDocumentComponent docType={docType} />
+            <NoDocumentComponent docType={docType} searchInput={searchInput} />
           )}
         </Box>
       </>
@@ -212,8 +212,9 @@ function NoDocumentComponent({ docType, ...props }: any) {
       fontSize="lg"
     >
       <Heading fontSize="5xl">No notes here.</Heading>
-      {docType === "owned" && <Text>Start writing notes!</Text>}
-      {docType === "shared" && <Text>Get others to share notes!</Text>}
+      {props.searchInput.length > 0 && <Text>No matches found!</Text>}
+      {props.searchInput.length === 0 && docType === "owned" && <Text>Start writing notes!</Text>}
+      {props.searchInput.length === 0 && docType === "shared" && <Text>Get others to share notes!</Text>}
     </VStack>
   );
 }
