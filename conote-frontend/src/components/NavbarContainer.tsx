@@ -10,7 +10,7 @@ export default function NavbarContainer({ children, ...props }: Props) {
     <Flex
       as="nav"
       id="navbar-container"
-      zIndex="1"
+      zIndex="50"
       align="center"
       justify="space-between"
       position="fixed"

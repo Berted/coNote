@@ -1,3 +1,7 @@
+/*
+  Deprecated. Perhaps should remove soon.
+*/
+
 import {
   Slider,
   SliderTrack,

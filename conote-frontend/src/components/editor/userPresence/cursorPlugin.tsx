@@ -18,7 +18,7 @@ const cursorTooltipBaseTheme = EditorView.baseTheme({
     padding: "2px 4px",
     left: "-4px",
     border: "0px",
-    zIndex: "4000",
+    zIndex: "40",
     backgroundColor: "transparent",
   },
   ".cm-tooltip.cm-other-cursor-content .cm-other-cursor-element": {
@@ -32,7 +32,7 @@ const cursorTooltipBaseTheme = EditorView.baseTheme({
     borderLeft: "2px solid",
     top: "0px",
     left: "3px",
-    zIndex: "4000",
+    zIndex: "40",
   },
   ".cm-tooltip.cm-other-cursor-content .cm-other-cursor-tooltip": {
     position: "absolute",
@@ -56,7 +56,7 @@ const cursorTooltipBaseTheme = EditorView.baseTheme({
     textSizeAdjust: "100%",
     opacity: "1.0",
     fontSize: "12px",
-    zIndex: "4000",
+    zIndex: "40",
     transition: "opacity 0.15s ease-out",
     WebkitTransition: "opacity 0.15s ease-out",
     MozTransition: "opacity 0.15s ease-out",

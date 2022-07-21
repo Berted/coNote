@@ -90,7 +90,7 @@ function handleDownloadPDF(toast: any) {
     toast({
       title: "Info",
       description:
-        "We do not directly support PDF exports as of current. You may set the editor view to 0% and use your browser's print function to save as PDF, we have removed the navbar on print for this purpose.",
+        "We do not directly support PDF exports as of current. You may export to HTML first, then print as PDF as an alternative!",
       status: "info",
       duration: 8_000,
       isClosable: true,
