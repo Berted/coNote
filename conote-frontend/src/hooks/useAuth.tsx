@@ -24,6 +24,8 @@ import {
   set,
   DataSnapshot,
   onValue,
+  push,
+  serverTimestamp,
 } from "firebase/database";
 import userType from "components/interfaces/userType";
 
@@ -106,6 +108,37 @@ export function useProvideAuth() {
             user.uid
           ).catch((e) => console.log("SetEmailData Error: " + e));
         }
+        return user;
+      })
+      .then(async (user) => {
+        if (!user) return;
+        const welcomeDocument = '-N7VA2xTdMSXe8UqeUmF';
+        let history = await get(ref(getDatabase(), `docs/${welcomeDocument}/history`))
+          .then((snapshot) => {
+            console.log(snapshot.val());
+            return snapshot.val();
+          });
+        const newDocRef = push(ref(getDatabase(), `docs`), {
+          public: false,
+          roles: {
+            [user.uid]: "owner",
+          },
+          tags: {
+            '-': 'conote',
+          },
+          history: history,
+          timestamp: serverTimestamp(),
+          title: "Welcome to coNote!",
+        });
+        set(
+          ref(
+            getDatabase(),
+            `users/${user.uid}/owned_documents/${newDocRef.key}`
+          ),
+          true
+        ).catch((e) => {
+          console.log("Set Error: " + e); // TODO: Alert notification?
+        });
       });
   };
   const signout = () => {
