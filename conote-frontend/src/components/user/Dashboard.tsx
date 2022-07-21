@@ -187,6 +187,7 @@ export default function Dashboard() {
                     key={"doc-card-" + item}
                     docID={item}
                     docType={docType}
+                    searchInput={searchInput}
                   />
                 );
               })}
