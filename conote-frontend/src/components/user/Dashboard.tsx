@@ -33,7 +33,7 @@ export default function Dashboard() {
   const [tagsFilter, setTagsFilter] = useState<string[]>([]);
   const [tagsFilterOption, setTagsFilterOption] = useState("and");
   const [sorter, setSorter] = useState("time-dec");
-  const [searchInput, setSearchInput] = useState("time-dec");
+  const [searchInput, setSearchInput] = useState("");
   const [documents, setDocuments] = useState<string[] | undefined>(undefined);
 
   useEffect(() => {
