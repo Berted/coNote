@@ -2,12 +2,12 @@ import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, Al
 import { getDatabase, onValue, push, ref, remove, set } from "firebase/database";
 import { useProvideAuth } from "hooks/useAuth";
 import { useEffect, useRef, useState } from "react";
-import { IoCloudUpload, IoCopySharp, IoFilterSharp, IoImagesSharp, IoTrashSharp } from "react-icons/io5";
+import { IoCloseCircle, IoCloseSharp, IoCloudUpload, IoCopySharp, IoFilterSharp, IoImagesSharp, IoTrashSharp } from "react-icons/io5";
 import { FiFile } from 'react-icons/fi';
 import firebase from "firebase/compat/app";
 import "firebase/compat/storage";
 
-function DeleteImageButton({ docID, isOwner, imageObject }: any) {
+function DeleteImageButton({ docID, isOwner, imageObject, ...props }: any) {
   const [key, image] = imageObject;
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<any>();
@@ -18,19 +18,21 @@ function DeleteImageButton({ docID, isOwner, imageObject }: any) {
       <Tooltip
         label={"Delete image."}
         placement="bottom-start"
-        closeDelay={500}
       >
         <IconButton
+          m={0}
           aria-label={"delete-image-" + image}
-          icon={<IoTrashSharp />}
-          size='sm'
-          variant='solid'
-          opacity={0.3}
+          icon={<IoCloseCircle />}
+          size='xs'
+          variant='ghost'
+          colorScheme='blackAlpha'
+          opacity={0.5}
           _hover={{
-            opacity: 0.8,
+            opacity: 1,
           }}
           isDisabled={!isOwner}
           onClick={onOpen}
+          {...props}
         />
       </Tooltip>
       <AlertDialog
@@ -221,10 +223,20 @@ export default function SortFilterDrawer({ docID, owner }: any) {
                     borderWidth='1px'
                     borderRadius='lg'
                     overflow='hidden'
-                    minHeight='50px'
+                    minHeight='75px'
                     maxHeight='150px'
                     position='relative'>
                     <Image src={image} />
+                    {isOwner ? (
+                      <DeleteImageButton
+                        docID={docID}
+                        isOwner={isOwner}
+                        imageObject={imageObject}
+                        position='absolute'
+                        top={0}
+                        right={0}
+                        zIndex='1'
+                      />) : (<></>)}
                     <HStack
                       position='absolute'
                       bottom={0}
@@ -232,24 +244,18 @@ export default function SortFilterDrawer({ docID, owner }: any) {
                       zIndex='1'
                       flexDirection='row-reverse'
                     >
-                      <DeleteImageButton
-                        docID={docID}
-                        isOwner={isOwner}
-                        imageObject={imageObject}
-                      />
                       <Tooltip
                         label="Copy image markdown syntax to clipboard."
                         placement="bottom-start"
-                        closeDelay={500}
                       >
                         <IconButton
                           aria-label={"copy-image-" + image}
                           icon={<IoCopySharp />}
-                          size='sm'
+                          size='xs'
                           variant='solid'
-                          opacity={0.3}
+                          opacity={0.8}
                           _hover={{
-                            opacity: 0.8,
+                            opacity: 1,
                           }}
                           onClick={() => {
                             navigator.clipboard.writeText("![](" + image + ")");
