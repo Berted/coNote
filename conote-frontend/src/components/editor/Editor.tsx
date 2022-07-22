@@ -154,9 +154,14 @@ const Editor = () => {
             </Allotment.Pane>
 
             <Allotment.Pane visible={panelType !== PanelValue.Edit}>
-              <VStack w="100%" h="100%" overflow="auto">
+              <VStack
+                w="100%"
+                h="100%"
+                overflow="auto"
+                id="markdown-content-container"
+              >
                 <Box w="100%" verticalAlign="top" mt="-23px" textAlign="left">
-                  {panelType !== PanelValue.Edit && (
+                  {panelType !== PanelValue.Edit && available && (
                     <MarkdownPreview docContent={docContent} />
                   )}
                 </Box>
