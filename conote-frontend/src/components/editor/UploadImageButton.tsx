@@ -16,6 +16,8 @@ import {
   DrawerHeader,
   DrawerOverlay,
   FormControl,
+  FormErrorMessage,
+  FormHelperText,
   FormLabel,
   HStack,
   Icon,
@@ -153,6 +155,7 @@ export default function SortFilterDrawer({ docID, owner }: any) {
   const [file, setFile] = useState<File | undefined>(undefined);
 
   const isOwner = auth.user ? auth.user.uid === owner : false;
+  const fileInvalid = file !== undefined && file.type.split("/")[0] !== "image";
 
   // Subscribe to images bank
   useEffect(() => {
@@ -202,7 +205,7 @@ export default function SortFilterDrawer({ docID, owner }: any) {
         <DrawerContent flexDirection="column">
           <DrawerHeader>
             {"Images"}
-            <FormControl mt={3}>
+            <FormControl mt={3} isInvalid={fileInvalid}>
               <FormLabel fontWeight="bold">Upload new image</FormLabel>
               <InputGroup>
                 <InputLeftElement pointerEvents="none">
@@ -236,6 +239,14 @@ export default function SortFilterDrawer({ docID, owner }: any) {
                     mr="1.5"
                     onClick={async () => {
                       if (file) {
+                        if (fileInvalid) {
+                          toast({
+                            title: "File is not an image",
+                            status: "error",
+                            isClosable: true,
+                          });
+                          return;
+                        }
                         if (file && file.type.split("/")[0] === "image") {
                           toastRef.current = toast({
                             title: "Uploading image...",
@@ -272,6 +283,15 @@ export default function SortFilterDrawer({ docID, owner }: any) {
                   </Button>
                 </InputRightElement>
               </InputGroup>
+              {!fileInvalid ? (
+                <FormHelperText fontWeight='normal'>
+                  Upload your image.
+                </FormHelperText>
+              ) : (
+                <FormErrorMessage fontWeight='normal'>
+                  File is not an image.
+                </FormErrorMessage>
+              )}
             </FormControl>
           </DrawerHeader>
           <DrawerBody>
