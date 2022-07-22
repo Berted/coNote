@@ -59,16 +59,28 @@ import {
   query,
   equalTo,
 } from "firebase/database";
+import firebase from "firebase/compat/app";
+import "firebase/compat/storage";
 import { useProvideAuth } from "hooks/useAuth";
 import ColorfulTag from "./ColorfulTag";
 
 function DeleteDocButton({ docID, title, ...props }: any) {
   const auth = useProvideAuth();
+  const storage = firebase.storage();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef(null);
 
   const onDelete = (e: any) => {
     if (!auth.user) return;
+
+    get(ref(getDatabase(), `docs/${docID}/images`)).then((snapshot) => {
+      if (!auth.user) return;
+      snapshot.forEach((image) => {
+        if (image.key) {
+          storage.ref(`docs/${docID}/images/${image.key}`).delete().catch(e => console.log("Delete document assets error: " + e));
+        }
+      });
+    });
 
     get(ref(getDatabase(), `docs/${docID}/roles`)).then((snapshot) => {
       if (!auth.user) return;
