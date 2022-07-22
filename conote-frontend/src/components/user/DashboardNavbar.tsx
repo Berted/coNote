@@ -28,6 +28,7 @@ import {
   Tabs,
   TabList,
   Tab,
+  Tooltip,
 } from "@chakra-ui/react";
 
 import UserButton from "./UserButton";
@@ -115,6 +116,8 @@ function SortFilterDrawer({
   setFilterOption,
   sorter,
   setSorter,
+  searchInput,
+  setSearchInput,
   ...props
 }: any) {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -140,6 +143,14 @@ function SortFilterDrawer({
           <DrawerHeader>{"Sort & Filter"}</DrawerHeader>
           <DrawerBody>
             <Stack spacing="24px">
+            <Box>
+                <FormLabel fontWeight="bold">Search</FormLabel>
+                <Input 
+                  placeholder="Search your documents here..."
+                  value={searchInput}    
+                  onChange={(e) => setSearchInput(e.target.value)}            
+                />
+              </Box>
               <Box>
                 <FormLabel fontWeight="bold">Sort</FormLabel>
                 <Select
@@ -153,7 +164,9 @@ function SortFilterDrawer({
                 </Select>
               </Box>
               <Box>
-                <FormLabel fontWeight="bold">Filter</FormLabel>
+                <Tooltip label='Tags are case insensitive and must be unique'>
+                  <FormLabel fontWeight="bold">Filter</FormLabel>
+                </Tooltip>
                 <VStack>
                   <Container>
                     {tags !== undefined &&
@@ -169,7 +182,6 @@ function SortFilterDrawer({
                   </Container>
                   <FormControl isInvalid={tagError.length !== 0}>
                     <Input
-                      autoFocus
                       placeholder="Type new tags here..."
                       value={input}
                       onChange={({ target: { value } }) => {

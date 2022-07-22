@@ -109,11 +109,8 @@ export default function useFirepad(
           ".cm-scroller": { overflow: "auto" },
         }),
         EditorView.updateListener.of((update) => {
-          if (update.changes) {
-            setDocContent(update.state.doc.toString());
-          }
-
           if (update.docChanged) {
+            setDocContent(update.state.doc.toString());
             // Only update timestamp every second.
             if (updatedYet && Date.now() - lastSecond >= 1_000) {
               set(ref(getDatabase(), docRef + "/timestamp"), serverTimestamp());
