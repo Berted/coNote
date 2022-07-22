@@ -10,12 +10,13 @@ import {
   Button,
   useToast,
 } from "@chakra-ui/react";
-import { Link as RouteLink } from "react-router-dom";
+import { Link as RouteLink, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProvideAuth } from "hooks/useAuth";
 import PasswordInput from "./PasswordInput";
 import { Helmet } from "react-helmet";
+import queryStringType from "components/interfaces/queryStringType";
 
 function LoginForm(props: any) {
   const [email, setEmail] = useState("");
@@ -63,6 +64,7 @@ function LoginForm(props: any) {
 export default function Login() {
   const toast = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const authentication = useProvideAuth();
 
   return (
@@ -80,7 +82,12 @@ export default function Login() {
               authentication
                 .signin(email, password)
                 .then((response) => {
-                  navigate("/dashboard");
+                  if (location.state) {
+                    let { continueUrl } = location.state as queryStringType;
+                    navigate(continueUrl);
+                  } else {
+                    navigate("/dashboard");
+                  }
                   toast({
                     title: "Logged in!",
                     status: "success",

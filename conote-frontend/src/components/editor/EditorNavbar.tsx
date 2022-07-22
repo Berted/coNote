@@ -55,7 +55,7 @@ function validateEmail(email: string) {
 
 // The following assumes the Owner is never modified from this method.
 async function modifyUserRole(docID: string, uid: string, role: string | null) {
-  let editDocContent = new Promise(() => {});
+  let editDocContent = new Promise(() => { });
 
   if (role === "editor") {
     editDocContent = set(
@@ -287,6 +287,8 @@ function PublicViewCheckbox({ docID, isOwner, ...props }: any) {
   const toast = useToast();
 
   useEffect(() => {
+    if (auth.user === null) return;
+
     const unsub = onValue(
       ref(getDatabase(), `docs/${docID}/public`),
       (snapshot) => {
@@ -342,6 +344,8 @@ function DocShareButton({ docID, ...props }: any) {
 
   // Effect to get user roles.
   useEffect(() => {
+    if (auth.user === null) return;
+
     const unsub = onValue(
       ref(getDatabase(), `docs/${docID}/roles`),
       (snapshot) => {
@@ -471,7 +475,7 @@ export default function EditorNavbar({
       <HStack spacing="4">
         <HStack align="center" spacing="1">
           <UserPresenceAvatars userPresence={userPresence} />
-          {userRole !== "viewer" && (
+          {userRole !== undefined && userRole !== "viewer" && (
             <UploadImageButton docID={docID} owner={owner} />
           )}
           <ExportButton docContent={docContent} />
