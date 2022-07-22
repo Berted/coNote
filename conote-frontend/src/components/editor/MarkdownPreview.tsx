@@ -27,13 +27,13 @@ function hashchange() {
   const name = "user-content-" + hash;
   const target =
     document.getElementById(name) || document.getElementsByName(name)[0];
+  const container = document.getElementById("markdown-content-container");
 
   if (target) {
     setTimeout(() => {
-      target.scrollIntoView({
+      container?.scroll({
         behavior: "smooth",
-        block: "nearest",
-        inline: "start",
+        top: Math.max(0, target.offsetTop - 10),
       });
     }, 0);
   }
