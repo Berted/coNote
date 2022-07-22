@@ -58,8 +58,10 @@ function EditUserButton() {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | undefined>(undefined);
+  const [fileRemoved, setFileRemoved] = useState<boolean>(false);
 
   const toastRef = useRef<ToastId>();
+  const avatarInvalid = file !== undefined && file.type.split("/")[0] !== "image";
 
   const resetValues = () => {
     setPass("");
@@ -68,6 +70,7 @@ function EditUserButton() {
     setPassword("");
     setConfirmPassword("");
     setFile(undefined);
+    setFileRemoved(false);
   };
 
   if (!auth.user) return <></>;
@@ -153,47 +156,71 @@ function EditUserButton() {
                     )}
                   </FormControl>
 
-                  <FormControl>
+                  <FormControl isInvalid={avatarInvalid}>
                     <FormLabel>Change avatar</FormLabel>
                     <HStack>
                       <Avatar
                         src={
                           file
                             ? URL.createObjectURL(file)
-                            : auth.userData?.img_url
+                            : (fileRemoved ? undefined : auth.userData?.img_url)
                         }
                         bg="blue.400"
                         size="lg"
                         borderColor="blue.400"
                         borderWidth="2px"
                       />
-                      <InputGroup>
-                        <InputLeftElement pointerEvents="none">
-                          <Icon as={FiFile} />
-                        </InputLeftElement>
-                        <input
-                          type="file"
-                          ref={inputRef}
-                          accept={"image/*"}
-                          style={{ display: "none" }}
-                          onChange={(e) => {
-                            if (e.target.files) {
-                              setFile(e.target.files[0]);
-                            }
-                          }}
-                        />
-                        <Input
-                          placeholder={"Your file ..."}
-                          onClick={() => {
-                            if (inputRef.current !== null) {
-                              inputRef.current.click();
-                            }
-                          }}
-                          readOnly={true}
-                          value={file ? file.name : ""}
-                        />
-                        <InputRightElement></InputRightElement>
-                      </InputGroup>
+                      <VStack align='start' mr={0} flexGrow={1} >
+                        <InputGroup>
+                          <InputLeftElement pointerEvents="none">
+                            <Icon as={FiFile} />
+                          </InputLeftElement>
+                          <input
+                            type="file"
+                            ref={inputRef}
+                            accept={"image/*"}
+                            style={{ display: "none" }}
+                            onChange={(e) => {
+                              if (e.target.files) {
+                                setFile(e.target.files[0]);
+                              }
+                            }}
+                          />
+                          <Input
+                            placeholder={"Your file ..."}
+                            onClick={() => {
+                              if (inputRef.current !== null) {
+                                inputRef.current.click();
+                              }
+                            }}
+                            readOnly={true}
+                            value={file ? file.name : ""}
+                          />
+
+                          <InputRightElement width="4.5rem">
+                            <Button
+                              h="1.75rem"
+                              size="sm"
+                              mr="1.5"
+                              onClick={() => {
+                                setFileRemoved(true);
+                                setFile(undefined);
+                              }}
+                            >
+                              Reset
+                            </Button>
+                          </InputRightElement>
+                        </InputGroup>
+                        {!avatarInvalid ? (
+                          <FormHelperText>
+                            Upload your avatar.
+                          </FormHelperText>
+                        ) : (
+                          <FormErrorMessage>
+                            File is not an image.
+                          </FormErrorMessage>
+                        )}
+                      </VStack>
                     </HStack>
                   </FormControl>
                 </>
@@ -236,7 +263,7 @@ function EditUserButton() {
                             break;
                           default:
                             errorTitle = "Error";
-                            console.log(error.code);
+                            console.log("Next error " + error.code);
                             break;
                         }
                         toast({
@@ -263,6 +290,14 @@ function EditUserButton() {
                     });
                     return;
                   }
+                  if (avatarInvalid) {
+                    toast({
+                      title: "Avatar is not an image file",
+                      status: "error",
+                      isClosable: true,
+                    });
+                    return;
+                  }
                   if (auth.user) {
                     auth
                       .reauthenticateUser(auth.user, pass)
@@ -279,7 +314,7 @@ function EditUserButton() {
                                 .catch((e) =>
                                   console.log("Set fullname error: " + e)
                                 );
-                              if (file && file.type.split("/")[0] === "image") {
+                              if (file !== undefined || fileRemoved) {
                                 toastRef.current = toast({
                                   title: "Saving...",
                                   status: "loading",
@@ -289,13 +324,25 @@ function EditUserButton() {
                                 const storageRef = storage.ref(
                                   `users/${uid}/avatar`
                                 );
-                                await storageRef.put(file);
-                                set(
-                                  ref(getDatabase(), `users/${uid}/img_url`),
-                                  await storageRef.getDownloadURL()
-                                ).catch((e) =>
-                                  console.log("Set url error: " + e)
-                                );
+                                if (file) {
+                                  await storageRef.put(file);
+                                  set(
+                                    ref(getDatabase(), `users/${uid}/img_url`),
+                                    await storageRef.getDownloadURL()
+                                  ).catch((e) =>
+                                    console.log("Set url error: " + e)
+                                  );
+                                } else if (fileRemoved) {
+                                  await storageRef.delete().catch(e => {
+                                    // File does not exist; it's fine
+                                  });
+                                  set(
+                                    ref(getDatabase(), `users/${uid}/img_url`),
+                                    ""
+                                  ).catch((e) =>
+                                    console.log("Set url error: " + e)
+                                  );
+                                }
                                 if (toastRef.current) {
                                   toast.close(toastRef.current);
                                 }
@@ -319,7 +366,7 @@ function EditUserButton() {
                                     "Password must contain at least 6 characters";
                                   break;
                                 default:
-                                  console.log(error.code);
+                                  console.log("Save error " + error.code);
                                   errorTitle = "Error";
                                   break;
                               }
@@ -381,11 +428,11 @@ export default function UserButton(props: any) {
             _hover={
               auth.userData?.img_url
                 ? {
-                    filter: "brightness(0.9)",
-                  }
+                  filter: "brightness(0.9)",
+                }
                 : {
-                    bg: "blue.500",
-                  }
+                  bg: "blue.500",
+                }
             }
             // _hover={{
             //   bg: "blue.600",
