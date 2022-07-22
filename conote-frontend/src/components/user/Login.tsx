@@ -102,6 +102,9 @@ export default function Login() {
                     case "auth/wrong-password":
                       errorTitle = "Incorrect password";
                       break;
+                    case "auth/too-many-requests":
+                      errorTitle = "Too many attempts!"
+                      break;
                     default:
                       console.log(error.code);
                       errorTitle = "Error";

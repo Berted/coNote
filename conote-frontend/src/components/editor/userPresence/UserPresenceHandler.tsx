@@ -75,6 +75,7 @@ export default class UserPresenceHandler {
     } else if (this.userPresenceData[x] === undefined) {
       this.userPresenceData[x] = {
         name: x,
+        img_url: "",
         color: userData.color,
         from: userData?.cursor?.from,
         to: userData?.cursor?.to,
@@ -86,8 +87,14 @@ export default class UserPresenceHandler {
         this.callOnAddListener({ uid: x, ...this.userPresenceData[x] });
         this.callListener();
       });
+      get(ref(getDatabase(), `users/${x}/img_url`)).then((snap2) => {
+        this.callOnRemListener({ uid: x, ...this.userPresenceData[x] });
+        this.userPresenceData[x].img_url = snap2.val();
+        this.callOnAddListener({ uid: x, ...this.userPresenceData[x] });
+        this.callListener();
+      });
     } else {
-      // TODO: User Presence Data fullname never re-grabbed, probably not an issue.
+      // TODO: User Presence Data fullname & img_url never re-grabbed, probably not an issue.
       this.callOnRemListener({ uid: x, ...this.userPresenceData[x] });
       this.userPresenceData[x].color = userData.color;
       this.userPresenceData[x].from = userData?.cursor?.from;

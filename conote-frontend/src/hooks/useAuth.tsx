@@ -12,10 +12,14 @@ import {
   sendPasswordResetEmail,
   confirmPasswordReset,
   signInWithCredential,
+  reauthenticateWithCredential,
   onAuthStateChanged,
   User,
   verifyPasswordResetCode,
   ActionCodeSettings,
+  AuthCredential,
+  EmailAuthProvider,
+  updatePassword,
 } from "firebase/auth";
 import {
   getDatabase,
@@ -125,8 +129,14 @@ export function useProvideAuth() {
   };
   const verifyPwdResetCode = (code: string) => {
     return verifyPasswordResetCode(auth, code);
+  };
+  const reauthenticateUser = (currentUser: User, password: string) => {
+    let credential = EmailAuthProvider.credential(currentUser.email === null ? "" : currentUser.email, password);
+    return reauthenticateWithCredential(currentUser, credential);    
+  };
+  const changePassword = (currentUser: User, password: string) => {
+    return updatePassword(currentUser, password);
   }
-
   const updateUserData = (snapshot: DataSnapshot) => {
     if (user) {
       if (snapshot.exists()) {
@@ -190,5 +200,7 @@ export function useProvideAuth() {
     sendPwdResetEmail,
     confirmPwdReset,
     verifyPwdResetCode,
+    reauthenticateUser,
+    changePassword,
   };
 }
