@@ -40,8 +40,10 @@ function UserPresencePopover({ userPresence, ...props }: any) {
                     <Td paddingRight="0px" paddingLeft="6px" width="32px">
                       <Avatar
                         fontWeight="600"
+                        src={userPresence[x].img_url}
                         bg={userPresence[x].color}
                         borderColor={userPresence[x].color}
+                        borderWidth="2px"
                         name={userPresence[x].name}
                         color="whiteAlpha.900"
                         key={"user-presence-avatar-" + userPresence[x].uid}
@@ -77,13 +79,14 @@ export default function UserPresenceAvatars({ userPresence, ...props }: any) {
           size="sm"
           transition="100ms"
           _hover={{
-            filter: "brightness(0.8)",
+            filter: "brightness(0.9)",
           }}
         >
           {Object.keys(userPresence).map((x) => {
             return (
               <Avatar
                 fontWeight="600"
+                src={userPresence[x].img_url}
                 bg={userPresence[x].color}
                 borderColor={userPresence[x].color}
                 name={userPresence[x].name}
