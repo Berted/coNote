@@ -173,8 +173,8 @@ export default function Dashboard() {
           <SimpleGrid
             minChildWidth="300px"
             maxWidth={`${documents !== undefined
-                ? Object.values(documents).length * 500 + 20
-                : 0
+              ? Object.values(documents).length * 500 + 20
+              : 0
               }px`}
             paddingX="7"
             marginTop="12vh"
@@ -203,6 +203,10 @@ export default function Dashboard() {
 }
 
 function NoDocumentComponent({ docType, ...props }: any) {
+  const auth = useProvideAuth();
+  const hasOwned = auth.userData !== undefined && auth.userData.owned_documents !== undefined;
+  const hasShared = auth.userData !== undefined && auth.userData.shared_documents !== undefined;
+
   return (
     <VStack
       textColor="gray.300"
@@ -212,9 +216,9 @@ function NoDocumentComponent({ docType, ...props }: any) {
       fontSize="lg"
     >
       <Heading fontSize="5xl">No notes here.</Heading>
-      {props.searchInput.length > 0 && <Text>No matches found!</Text>}
-      {props.searchInput.length === 0 && docType === "owned" && <Text>Start writing notes!</Text>}
-      {props.searchInput.length === 0 && docType === "shared" && <Text>Get others to share notes!</Text>}
+      {((hasOwned && docType === "owned") || (hasShared && docType === "shared")) && <Text>No matches found!</Text>}
+      {!hasOwned && docType === "owned" && <Text>Start writing notes!</Text>}
+      {!hasShared && docType === "shared" && <Text>Get others to share notes!</Text>}
     </VStack>
   );
 }
