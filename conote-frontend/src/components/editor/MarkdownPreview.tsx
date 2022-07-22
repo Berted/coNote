@@ -12,19 +12,73 @@ import rehypeRaw from "rehype-raw";
 import rehypeSlug from "rehype-slug-custom-id";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import "katex/dist/katex.min.css";
-import React from "react";
+import React, { useEffect } from "react";
+
+function hashchange() {
+  /** @type {string|undefined} */
+  let hash;
+
+  try {
+    hash = decodeURIComponent(window.location.hash.slice(1)).toLowerCase();
+  } catch {
+    return;
+  }
+
+  const name = "user-content-" + hash;
+  const target =
+    document.getElementById(name) || document.getElementsByName(name)[0];
+
+  if (target) {
+    setTimeout(() => {
+      target.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "start",
+      });
+    }, 0);
+  }
+}
 
 function MarkdownPreview({ docContent, ...props }: any) {
+  useEffect(() => {
+    // Page load (you could wrap this in a DOM ready if the script is loaded early).
+    hashchange();
+
+    // When URL changes.
+    window.addEventListener("hashchange", hashchange);
+
+    // When on the URL already, perhaps after scrolling, and clicking again, which
+    // doesn’t emit `hashchange`.
+    document.addEventListener(
+      "click",
+      (event) => {
+        if (
+          event.target &&
+          event.target instanceof HTMLAnchorElement &&
+          event.target.href === window.location.href &&
+          window.location.hash.length > 1
+        ) {
+          setTimeout(() => {
+            if (!event.defaultPrevented) {
+              hashchange();
+            }
+          });
+        }
+      },
+      false
+    );
+  }, []);
+
   return (
     <>
       <ReactMarkdown
         children={docContent}
         className="markdown-body"
         remarkPlugins={[
-          [remarkToc, { tight: true, prefix: "user-content-" }],
           remarkMath,
           remarkGfm,
           remarkSimpleUML,
+          [remarkToc, { tight: true }],
         ]}
         rehypePlugins={[
           rehypeRaw,
@@ -98,6 +152,7 @@ function MarkdownPreview({ docContent, ...props }: any) {
           ],
           rehypeKatex,
         ]}
+        remarkRehypeOptions={{ clobberPrefix: "" }}
         linkTarget={(href, children, title) => {
           if (/^#/.test(href)) return "_self";
           else return "_blank";
