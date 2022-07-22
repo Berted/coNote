@@ -116,6 +116,8 @@ function SortFilterDrawer({
   setFilterOption,
   sorter,
   setSorter,
+  searchInput,
+  setSearchInput,
   ...props
 }: any) {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -141,6 +143,14 @@ function SortFilterDrawer({
           <DrawerHeader>{"Sort & Filter"}</DrawerHeader>
           <DrawerBody>
             <Stack spacing="24px">
+            <Box>
+                <FormLabel fontWeight="bold">Search</FormLabel>
+                <Input 
+                  placeholder="Search your documents here..."
+                  value={searchInput}    
+                  onChange={(e) => setSearchInput(e.target.value)}            
+                />
+              </Box>
               <Box>
                 <FormLabel fontWeight="bold">Sort</FormLabel>
                 <Select
@@ -172,7 +182,6 @@ function SortFilterDrawer({
                   </Container>
                   <FormControl isInvalid={tagError.length !== 0}>
                     <Input
-                      autoFocus
                       placeholder="Type new tags here..."
                       value={input}
                       onChange={({ target: { value } }) => {

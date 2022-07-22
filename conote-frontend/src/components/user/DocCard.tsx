@@ -30,6 +30,7 @@ import {
   Container,
   Spacer,
   FormLabel,
+  Highlight,
   Tooltip,
   Icon,
 } from "@chakra-ui/react";
@@ -452,7 +453,12 @@ export default function DocCard({ docID, docType, ...props }: any) {
           lineHeight="tight"
           noOfLines={1}
         >
-          {title}
+          <Highlight
+            query={props.searchInput}
+            styles={props.searchInput.length === 0 ? {} : { px: '0', py: '0', bg: 'red.100' }}
+          >
+            {title ? title : ''}
+          </Highlight>
         </Box>
       </LinkOverlay>
 

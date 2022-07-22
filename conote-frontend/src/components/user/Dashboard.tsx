@@ -33,6 +33,7 @@ export default function Dashboard() {
   const [tagsFilter, setTagsFilter] = useState<string[]>([]);
   const [tagsFilterOption, setTagsFilterOption] = useState("and");
   const [sorter, setSorter] = useState("time-dec");
+  const [searchInput, setSearchInput] = useState("");
   const [documents, setDocuments] = useState<string[] | undefined>(undefined);
 
   useEffect(() => {
@@ -75,6 +76,15 @@ export default function Dashboard() {
         return Promise.all([docID, tags, title, timestamp]);
       })
     )
+      .then((docs) => {
+        // Filter by search input
+        if (searchInput.length === 0) {
+          return docs;
+        }
+        return docs.filter((x) => {
+          return x[2].toLowerCase().includes(searchInput.toLowerCase());
+        });
+      })
       .then((docs) => {
         // Filter by tags (option: AND or OR)
         if (tagsFilter.length === 0) {
@@ -138,7 +148,7 @@ export default function Dashboard() {
         setDocuments(docs.map((x) => x[0]));
       })
       .catch((e) => console.log("Document display error: " + e));
-  }, [userData, tagsFilter, tagsFilterOption, sorter, docType]);
+  }, [userData, tagsFilter, tagsFilterOption, sorter, docType, searchInput]);
 
   if (!auth.user) return <></>;
   else {
@@ -156,15 +166,16 @@ export default function Dashboard() {
             sorter={sorter}
             setSorter={setSorter}
             setDocType={setDocType}
+            searchInput={searchInput}
+            setSearchInput={setSearchInput}
           />
 
           <SimpleGrid
             minChildWidth="300px"
-            maxWidth={`${
-              documents !== undefined
-                ? Object.values(documents).length * 500 + 20
-                : 0
-            }px`}
+            maxWidth={`${documents !== undefined
+              ? Object.values(documents).length * 500 + 20
+              : 0
+              }px`}
             paddingX="7"
             marginTop="12vh"
             gap="5"
@@ -176,13 +187,14 @@ export default function Dashboard() {
                     key={"doc-card-" + item}
                     docID={item}
                     docType={docType}
+                    searchInput={searchInput}
                   />
                 );
               })}
           </SimpleGrid>
 
           {documents !== undefined && Object.values(documents).length === 0 && (
-            <NoDocumentComponent docType={docType} />
+            <NoDocumentComponent docType={docType} searchInput={searchInput} />
           )}
         </Box>
       </>
@@ -191,6 +203,10 @@ export default function Dashboard() {
 }
 
 function NoDocumentComponent({ docType, ...props }: any) {
+  const auth = useProvideAuth();
+  const hasOwned = auth.userData !== undefined && Object.keys(auth.userData.owned_documents).length !== 0;
+  const hasShared = auth.userData !== undefined && Object.keys(auth.userData.shared_documents).length !== 0;
+
   return (
     <VStack
       textColor="gray.300"
@@ -200,8 +216,9 @@ function NoDocumentComponent({ docType, ...props }: any) {
       fontSize="lg"
     >
       <Heading fontSize="5xl">No notes here.</Heading>
-      {docType === "owned" && <Text>Start writing notes!</Text>}
-      {docType === "shared" && <Text>Get others to share notes!</Text>}
+      {((hasOwned && docType === "owned") || (hasShared && docType === "shared")) && <Text>No matches found!</Text>}
+      {!hasOwned && docType === "owned" && <Text>Start writing notes!</Text>}
+      {!hasShared && docType === "shared" && <Text>Get others to share notes!</Text>}
     </VStack>
   );
 }
