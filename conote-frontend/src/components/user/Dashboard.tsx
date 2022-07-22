@@ -204,8 +204,8 @@ export default function Dashboard() {
 
 function NoDocumentComponent({ docType, ...props }: any) {
   const auth = useProvideAuth();
-  const hasOwned = auth.userData !== undefined && auth.userData.owned_documents !== undefined;
-  const hasShared = auth.userData !== undefined && auth.userData.shared_documents !== undefined;
+  const hasOwned = auth.userData !== undefined && Object.keys(auth.userData.owned_documents).length !== 0;
+  const hasShared = auth.userData !== undefined && Object.keys(auth.userData.shared_documents).length !== 0;
 
   return (
     <VStack
