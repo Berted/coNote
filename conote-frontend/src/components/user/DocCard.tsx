@@ -31,12 +31,16 @@ import {
   Spacer,
   FormLabel,
   Highlight,
+  Tooltip,
+  Icon,
 } from "@chakra-ui/react";
 import { Link as RouteLink } from "react-router-dom";
 import React from "react";
 import { useState, useEffect } from "react";
 import {
   IoCreateSharp,
+  IoInformationCircleSharp,
+  IoInformationOutline,
   IoPricetagsSharp,
   IoTime,
   IoTrashSharp,
@@ -230,7 +234,11 @@ function EditTagsButton({
                 />
               </FormControl>
               <FormControl>
-                <FormLabel>Tags</FormLabel>
+                <FormLabel>
+                  <Tooltip label='Tags are case insensitive and must be unique'>
+                    <Text>Tags</Text>
+                  </Tooltip>
+                </FormLabel>
                 <Container>
                   {tags !== undefined &&
                     Object.values(tags).map((tag: any) => {

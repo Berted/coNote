@@ -44,6 +44,7 @@ import EditorViewSlider from "./EditorViewSlider";
 import ExportButton from "./ExportButton";
 import { AiOutlineConsoleSql } from "react-icons/ai";
 import UserPresenceAvatars from "./userPresence/UserPresenceAvatars";
+import EditorSplitButtons from "./EditorSplitButtons";
 
 function validateEmail(email: string) {
   return email.match(
@@ -438,27 +439,31 @@ function DocShareButton({ docID, ...props }: any) {
 export default function EditorNavbar({
   docID,
   docContent,
-  editSize,
-  setEditSize,
+  panelType,
+  setPanelType,
   userPresence,
   ...props
 }: any) {
   return (
-    <NavbarContainer {...props}>
-      <Logo
-        fontSize="24pt"
-        marginBottom="-0.4em"
-        transition="transform 100ms linear"
-        _hover={{
-          transform: "scale(1.05)",
-        }}
-        as={RouteLink}
-        to="/"
-      />
-
-      <Flex align="center" w="40vw">
-        <EditorViewSlider editSize={editSize} setEditSize={setEditSize} />
-      </Flex>
+    <NavbarContainer minH="73px" {...props}>
+      <HStack spacing="5">
+        <Logo
+          fontSize="24pt"
+          marginBottom="-0.25em"
+          transition="transform 100ms linear"
+          _hover={{
+            transform: "scale(1.05)",
+          }}
+          as={RouteLink}
+          to="/"
+        />
+        <HStack align="center" spacing="1">
+          <EditorSplitButtons
+            panelType={panelType}
+            setPanelType={setPanelType}
+          />
+        </HStack>
+      </HStack>
 
       <HStack spacing="4">
         <HStack align="center" spacing="1">

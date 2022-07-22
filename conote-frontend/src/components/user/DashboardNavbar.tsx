@@ -28,6 +28,7 @@ import {
   Tabs,
   TabList,
   Tab,
+  Tooltip,
 } from "@chakra-ui/react";
 
 import UserButton from "./UserButton";
@@ -163,7 +164,9 @@ function SortFilterDrawer({
                 </Select>
               </Box>
               <Box>
-                <FormLabel fontWeight="bold">Filter</FormLabel>
+                <Tooltip label='Tags are case insensitive and must be unique'>
+                  <FormLabel fontWeight="bold">Filter</FormLabel>
+                </Tooltip>
                 <VStack>
                   <Container>
                     {tags !== undefined &&

@@ -15,6 +15,7 @@ import {
   Text,
   PopoverArrow,
   Divider,
+  Link,
 } from "@chakra-ui/react";
 import { IoPerson } from "react-icons/io5";
 
@@ -79,6 +80,8 @@ export default function UserPresenceAvatars({ userPresence, ...props }: any) {
           _hover={{
             filter: "brightness(0.8)",
           }}
+          mr="1px"
+          role="button"
         >
           {Object.keys(userPresence).map((x) => {
             return (
@@ -90,6 +93,7 @@ export default function UserPresenceAvatars({ userPresence, ...props }: any) {
                 color="whiteAlpha.900"
                 key={"user-presence-avatar-" + x}
                 icon={<IoPerson />}
+                pointerEvents="none"
               ></Avatar>
             );
           })}
