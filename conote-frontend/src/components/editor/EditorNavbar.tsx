@@ -442,6 +442,7 @@ export default function EditorNavbar({
   editSize,
   setEditSize,
   userPresence,
+  userRole,
   owner,
   ...props
 }: any) {
@@ -465,7 +466,9 @@ export default function EditorNavbar({
       <HStack spacing="4">
         <HStack align="center" spacing="1">
           <UserPresenceAvatars userPresence={userPresence} />
-          <UploadImageButton docID={docID} owner={owner} />
+          {userRole !== "viewer" && (
+            <UploadImageButton docID={docID} owner={owner} />
+          )}
           <ExportButton docContent={docContent} />
           <DocShareButton docID={docID} />
         </HStack>

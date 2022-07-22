@@ -1,9 +1,60 @@
-import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Box, Button, Container, Divider, Drawer, DrawerBody, DrawerContent, DrawerFooter, DrawerHeader, DrawerOverlay, FormControl, FormLabel, HStack, Icon, IconButton, Image, Input, InputGroup, InputLeftElement, InputRightAddon, InputRightElement, ModalFooter, Select, Stack, ToastId, Tooltip, useDisclosure, useToast, VStack } from "@chakra-ui/react";
-import { getDatabase, onValue, push, ref, remove, set } from "firebase/database";
+import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  Box,
+  Button,
+  Container,
+  Divider,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerOverlay,
+  FormControl,
+  FormLabel,
+  HStack,
+  Icon,
+  IconButton,
+  Image,
+  Input,
+  InputGroup,
+  InputLeftElement,
+  InputRightAddon,
+  InputRightElement,
+  ModalFooter,
+  Select,
+  Stack,
+  ToastId,
+  Tooltip,
+  useDisclosure,
+  useToast,
+  VStack,
+} from "@chakra-ui/react";
+import {
+  getDatabase,
+  onValue,
+  push,
+  ref,
+  remove,
+  set,
+} from "firebase/database";
 import { useProvideAuth } from "hooks/useAuth";
 import { useEffect, useRef, useState } from "react";
-import { IoCloseCircle, IoCloseSharp, IoCloudUpload, IoCopySharp, IoFilterSharp, IoImagesSharp, IoTrashSharp } from "react-icons/io5";
-import { FiFile } from 'react-icons/fi';
+import {
+  IoCloseCircle,
+  IoCloseSharp,
+  IoCloudUpload,
+  IoCopySharp,
+  IoFilterSharp,
+  IoImagesSharp,
+  IoTrashSharp,
+} from "react-icons/io5";
+import { FiFile } from "react-icons/fi";
 import firebase from "firebase/compat/app";
 import "firebase/compat/storage";
 
@@ -15,18 +66,19 @@ function DeleteImageButton({ docID, isOwner, imageObject, ...props }: any) {
 
   return (
     <>
-      <Tooltip
-        label={"Delete image."}
-        placement="bottom-start"
-      >
+      <Tooltip label={"Delete image."} placement="bottom-start">
         <IconButton
-          m={0}
+          mt={2}
           aria-label={"delete-image-" + image}
-          icon={<IoCloseCircle />}
-          size='xs'
-          variant='ghost'
-          colorScheme='blackAlpha'
-          opacity={0.5}
+          icon={
+            <IoCloseCircle
+              style={{ backgroundColor: "white", borderRadius: "10px" }}
+            />
+          }
+          size="sm"
+          variant="link"
+          colorScheme="black"
+          opacity={0.6}
           _hover={{
             opacity: 1,
           }}
@@ -42,34 +94,42 @@ function DeleteImageButton({ docID, isOwner, imageObject, ...props }: any) {
       >
         <AlertDialogOverlay>
           <AlertDialogContent>
-            <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
               Delete Image
             </AlertDialogHeader>
 
             <AlertDialogBody>
-              Are you sure? You can't undo this action afterwards. All image links will be broken as well.
+              Are you sure? You can't undo this action afterwards. All image
+              links will be broken as well.
             </AlertDialogBody>
 
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={onClose}>
                 Cancel
               </Button>
-              <Button colorScheme='red' onClick={() => {
-                if (isOwner) {
-                  remove(ref(getDatabase(), `docs/${docID}/images/${key}`))
-                    .then(() => {
-                      storage.ref(`docs/${docID}/images/${key}`)
-                        .delete()
-                        .then(() => {
-                          onClose();
-                        })
-                        .catch(e => {
-                          console.log("Delete image from storage error " + e);
-                        })
-                    })
-                    .catch(e => console.log("Remove image from database error " + e));
-                }
-              }} ml={3}>
+              <Button
+                colorScheme="red"
+                onClick={() => {
+                  if (isOwner) {
+                    remove(ref(getDatabase(), `docs/${docID}/images/${key}`))
+                      .then(() => {
+                        storage
+                          .ref(`docs/${docID}/images/${key}`)
+                          .delete()
+                          .then(() => {
+                            onClose();
+                          })
+                          .catch((e) => {
+                            console.log("Delete image from storage error " + e);
+                          });
+                      })
+                      .catch((e) =>
+                        console.log("Remove image from database error " + e)
+                      );
+                  }
+                }}
+                ml={3}
+              >
                 Delete
               </Button>
             </AlertDialogFooter>
@@ -77,7 +137,6 @@ function DeleteImageButton({ docID, isOwner, imageObject, ...props }: any) {
         </AlertDialogOverlay>
       </AlertDialog>
     </>
-
   );
 }
 
@@ -106,14 +165,18 @@ export default function SortFilterDrawer({ docID, owner }: any) {
           if (image.key) {
             arr.push(image.key);
           }
-        })
+        });
         arr.reverse();
         Promise.all(
-          arr.map(image => {
-            return Promise.all([image, storage.ref(`docs/${docID}/images/${image}`).getDownloadURL()]);
-          })).then(response => {
-            setImages(response);
-          });
+          arr.map((image) => {
+            return Promise.all([
+              image,
+              storage.ref(`docs/${docID}/images/${image}`).getDownloadURL(),
+            ]);
+          })
+        ).then((response) => {
+          setImages(response);
+        });
       },
       (e) => {
         // TODO: Alert notification?
@@ -129,8 +192,8 @@ export default function SortFilterDrawer({ docID, owner }: any) {
     <>
       <IconButton
         aria-label="image-bank"
-        variant='ghost'
-        colorScheme='blue'
+        variant="ghost"
+        colorScheme="blue"
         icon={<IoImagesSharp />}
         onClick={onOpen}
       />
@@ -139,22 +202,17 @@ export default function SortFilterDrawer({ docID, owner }: any) {
         <DrawerContent flexDirection="column">
           <DrawerHeader>
             {"Images"}
-            <FormControl
-              mt={3}
-            >
-              <FormLabel fontWeight='bold'>
-                Upload new image
-              </FormLabel>
+            <FormControl mt={3}>
+              <FormLabel fontWeight="bold">Upload new image</FormLabel>
               <InputGroup>
-                <InputLeftElement
-                  pointerEvents="none">
+                <InputLeftElement pointerEvents="none">
                   <Icon as={FiFile} />
                 </InputLeftElement>
                 <input
-                  type='file'
+                  type="file"
                   ref={inputRef}
-                  accept={'image/*'}
-                  style={{ display: 'none' }}
+                  accept={"image/*"}
+                  style={{ display: "none" }}
                   onChange={(e) => {
                     if (e.target.files) {
                       setFile(e.target.files[0]);
@@ -169,29 +227,32 @@ export default function SortFilterDrawer({ docID, owner }: any) {
                     }
                   }}
                   readOnly={true}
-                  value={file ? file.name : ''}
+                  value={file ? file.name : ""}
                 />
-                <InputRightElement
-                  width='4.5rem'
-                >
+                <InputRightElement width="4.5rem">
                   <Button
-                    h='1.75rem'
-                    size='sm'
-                    mr='1.5'
+                    h="1.75rem"
+                    size="sm"
+                    mr="1.5"
                     onClick={async () => {
                       if (file) {
-                        if (file && file.type.split('/')[0] === 'image') {
+                        if (file && file.type.split("/")[0] === "image") {
                           toastRef.current = toast({
                             title: "Uploading image...",
                             status: "loading",
                             isClosable: false,
                             duration: null,
                           });
-                          const newImgName = push(ref(getDatabase(), `docs/${docID}/images`), true);
-                          const storageRef = storage.ref(`docs/${docID}/images/${newImgName.key}`);
+                          const newImgName = push(
+                            ref(getDatabase(), `docs/${docID}/images`),
+                            true
+                          );
+                          const storageRef = storage.ref(
+                            `docs/${docID}/images/${newImgName.key}`
+                          );
                           await storageRef.put(file, {
                             customMetadata: {
-                              'owner': owner
+                              owner: owner,
                             },
                           });
 
@@ -219,30 +280,34 @@ export default function SortFilterDrawer({ docID, owner }: any) {
                 const [key, image] = imageObject;
                 return (
                   <Box
-                    maxW='sm'
-                    borderWidth='1px'
-                    borderRadius='lg'
-                    overflow='hidden'
-                    minHeight='75px'
-                    maxHeight='150px'
-                    position='relative'>
+                    maxW="sm"
+                    borderWidth="1px"
+                    borderRadius="lg"
+                    overflow="hidden"
+                    minHeight="75px"
+                    maxHeight="150px"
+                    position="relative"
+                  >
                     <Image src={image} />
                     {isOwner ? (
                       <DeleteImageButton
                         docID={docID}
                         isOwner={isOwner}
                         imageObject={imageObject}
-                        position='absolute'
+                        position="absolute"
                         top={0}
                         right={0}
-                        zIndex='1'
-                      />) : (<></>)}
+                        zIndex="1"
+                      />
+                    ) : (
+                      <></>
+                    )}
                     <HStack
-                      position='absolute'
+                      position="absolute"
                       bottom={0}
                       right={0}
-                      zIndex='1'
-                      flexDirection='row-reverse'
+                      zIndex="1"
+                      flexDirection="row-reverse"
                     >
                       <Tooltip
                         label="Copy image markdown syntax to clipboard."
@@ -251,11 +316,16 @@ export default function SortFilterDrawer({ docID, owner }: any) {
                         <IconButton
                           aria-label={"copy-image-" + image}
                           icon={<IoCopySharp />}
-                          size='xs'
-                          variant='solid'
-                          opacity={0.8}
+                          size="xs"
+                          colorScheme="gray"
+                          bg="whiteAlpha.800"
+                          variant="solid"
+                          borderTopRightRadius="0px"
+                          borderBottomLeftRadius="0px"
+                          borderBottomWidth="0px"
+                          borderRightWidth="0px"
                           _hover={{
-                            opacity: 1,
+                            bg: "whiteAlpha.900",
                           }}
                           onClick={() => {
                             navigator.clipboard.writeText("![](" + image + ")");
