@@ -112,7 +112,7 @@ export function useProvideAuth() {
       })
       .then(async (user) => {
         if (!user) return;
-        const welcomeDocument = '-N7VA2xTdMSXe8UqeUmF';
+        const welcomeDocument = '-N7_A0yVxAjjB-jtlQaN';
         let history = await get(ref(getDatabase(), `docs/${welcomeDocument}/history`))
           .then((snapshot) => {
             console.log(snapshot.val());
