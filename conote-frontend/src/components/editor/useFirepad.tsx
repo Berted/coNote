@@ -25,12 +25,14 @@ import UserPresenceHandler from "./userPresence/UserPresenceHandler";
 import selectionPlugin from "./userPresence/selectionPlugin";
 import cursorPlugin from "./userPresence/cursorPlugin";
 import CursorHandler from "./userPresence/CursorHandler";
+import { useToast } from "@chakra-ui/react";
 
 export default function useFirepad(
   docID: string | undefined,
   editorRef: React.RefObject<HTMLDivElement>
 ) {
   const auth = useProvideAuth();
+  const toast = useToast();
   const navigate = useNavigate();
   const [view, setView] = useState<EditorView>();
   const [docContent, setDocContent] = useState("");
@@ -46,6 +48,16 @@ export default function useFirepad(
 
     let docRef = "debug_doc";
     if (docID) docRef = "docs/" + docID;
+
+    const redirectLogin = () => {
+      toast.closeAll();
+      navigate("/login", {
+        replace: false,
+        state: {
+          continueUrl: `/docs/${docID}`,
+        }
+      });
+    };
 
     get(ref(getDatabase(), docRef + "/public"))
       .then((snap1) => {
@@ -67,12 +79,17 @@ export default function useFirepad(
         } else if (snap1.val()) {
           setUserRole("viewer");
         } else {
-          navigate("/error/403");
+          redirectLogin();
+          // navigate("/error/403");
         }
       })
       .catch((e) => {
-        if (e.toString() === "Error: Permission denied") navigate("/error/403");
-        else navigate("/error/" + e);
+        if (auth.user) {
+          if (e.toString() === "Error: Permission denied") navigate("/error/403");
+          else navigate("/error/" + e);
+        } else {
+          redirectLogin();
+        }
       });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
