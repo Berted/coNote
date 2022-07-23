@@ -471,18 +471,19 @@ export default function EditorNavbar({
           />
         </HStack>
       </HStack>
-
-      <HStack spacing="4">
-        <HStack align="center" spacing="1">
-          <UserPresenceAvatars userPresence={userPresence} />
-          {userRole !== undefined && userRole !== "viewer" && (
-            <UploadImageButton docID={docID} owner={owner} />
-          )}
-          <ExportButton docContent={docContent} />
-          <DocShareButton docID={docID} />
+      {userRole !== undefined && (
+        <HStack spacing="4">
+          <HStack align="center" spacing="1">
+            <UserPresenceAvatars userPresence={userPresence} />
+            {userRole !== "viewer" && (
+              <UploadImageButton docID={docID} owner={owner} />
+            )}
+            <ExportButton docContent={docContent} />
+            <DocShareButton docID={docID} />
+          </HStack>
+          <UserButton />
         </HStack>
-        <UserButton />
-      </HStack>
+      )}
     </NavbarContainer>
   );
 }
