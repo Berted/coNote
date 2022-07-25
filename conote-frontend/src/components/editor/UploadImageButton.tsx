@@ -118,9 +118,6 @@ function DeleteImageButton({ docID, isOwner, imageObject, ...props }: any) {
                         storage
                           .ref(`docs/${docID}/images/${key}`)
                           .delete()
-                          .then(() => {
-                            onClose();
-                          })
                           .catch((e) => {
                             console.log("Delete image from storage error " + e);
                           });
@@ -129,6 +126,7 @@ function DeleteImageButton({ docID, isOwner, imageObject, ...props }: any) {
                         console.log("Remove image from database error " + e)
                       );
                   }
+                  onClose();
                 }}
                 ml={3}
               >
