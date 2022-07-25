@@ -1,0 +1,90 @@
+{
+  "name": "conote-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@akebifiky/remark-simple-plantuml": "^1.0.2",
+    "@chakra-ui/react": "^2.2.4",
+    "@codemirror/lang-markdown": "^6.0.0",
+    "@codemirror/language-data": "^6.1.0",
+    "@emotion/react": "^11.9.3",
+    "@emotion/styled": "^11.9.3",
+    "@fontsource/dm-sans": "^4.5.7",
+    "@fontsource/league-spartan": "^4.5.10",
+    "@lucafabbian/firepad": "^1.5.17",
+    "@testing-library/jest-dom": "^5.16.4",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/firebase": "^3.2.1",
+    "@types/jest": "^27.5.1",
+    "@types/node": "^16.11.36",
+    "@types/react": "^18.0.9",
+    "@types/react-dom": "^18.0.4",
+    "@types/react-helmet": "^6.1.5",
+    "@uiw/react-codemirror": "^4.8.1",
+    "allotment": "^1.14.5",
+    "chakra-ui-markdown-renderer": "^4.1.0",
+    "codemirror": "^6.0.0",
+    "csstype": "^3.1.0",
+    "firebase": "^9.8.3",
+    "framer-motion": "^6.5.1",
+    "github-markdown-css": "^5.1.0",
+    "jspdf": "^2.5.1",
+    "react": "^18.1.0",
+    "react-app-rewired": "^2.2.1",
+    "react-dom": "^18.1.0",
+    "react-helmet": "^6.1.0",
+    "react-icons": "^4.4.0",
+    "react-markdown": "^8.0.3",
+    "react-router-dom": "^6.3.0",
+    "react-scripts": "5.0.1",
+    "rehype-highlight": "^5.0.2",
+    "rehype-katex": "^6.0.2",
+    "rehype-raw": "^6.1.1",
+    "rehype-sanitize": "^5.0.1",
+    "rehype-slug-custom-id": "^1.1.0",
+    "remark-gfm": "^3.0.1",
+    "remark-math": "^5.1.1",
+    "remark-mdx": "^2.1.1",
+    "remark-toc": "^8.0.1",
+    "typescript": "^4.6.4",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "npx mocha --recursive \"./test/*.{ts,js,cjs,mjs}\" --require \"./test/babel-register.js\"",
+    "test:watch": "npx mocha --recursive \"./test/*.{ts,js,cjs,mjs}\" --require \"./test/babel-register.js\" --watch",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@babel/core": "^7.18.9",
+    "@babel/preset-env": "^7.18.9",
+    "@babel/preset-react": "^7.18.6",
+    "@babel/preset-stage-0": "^7.8.3",
+    "@babel/preset-typescript": "^7.18.6",
+    "@babel/register": "^7.18.9",
+    "@firebase/rules-unit-testing": "^2.0.4",
+    "@testing-library/react": "^13.3.0",
+    "babel-loader": "^8.2.5",
+    "chai": "^4.3.6",
+    "mocha": "^10.0.0"
+  }
+}
