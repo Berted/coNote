@@ -118,9 +118,6 @@ function DeleteImageButton({ docID, isOwner, imageObject, ...props }: any) {
                         storage
                           .ref(`docs/${docID}/images/${key}`)
                           .delete()
-                          .then(() => {
-                            onClose();
-                          })
                           .catch((e) => {
                             console.log("Delete image from storage error " + e);
                           });
@@ -129,6 +126,7 @@ function DeleteImageButton({ docID, isOwner, imageObject, ...props }: any) {
                         console.log("Remove image from database error " + e)
                       );
                   }
+                  onClose();
                 }}
                 ml={3}
               >
@@ -165,6 +163,7 @@ export default function UploadImageDrawer({ docID, owner }: any) {
     const unsubscribe = onValue(
       ref(getDatabase(), `docs/${docID}/images`),
       (snapshot) => {
+        console.log(snapshot.val())
         let arr = [] as string[];
         snapshot.forEach((image) => {
           if (image.key) {
@@ -260,7 +259,7 @@ export default function UploadImageDrawer({ docID, owner }: any) {
                           });
                           const newImgName = push(
                             ref(getDatabase(), `docs/${docID}/images`),
-                            true
+                            false
                           );
                           const storageRef = storage.ref(
                             `docs/${docID}/images/${newImgName.key}`
@@ -272,7 +271,7 @@ export default function UploadImageDrawer({ docID, owner }: any) {
                           });
 
                           // HACK: to reload images in `UploadImageButton` after upload is finished
-                          set(ref(getDatabase(), `docs/${docID}/images`), true);
+                          set(ref(getDatabase(), `docs/${docID}/images/${newImgName.key}`), true);
 
                           let link = await storageRef.getDownloadURL();
                           setFile(undefined);

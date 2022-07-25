@@ -115,7 +115,7 @@ const Editor = () => {
                             );
                             const newImgName = push(
                               ref(getDatabase(), `docs/${params.docID}/images`),
-                              true
+                              false
                             );
                             const storageRef = storage.ref(
                               `docs/${params.docID}/images/${newImgName.key}`
@@ -128,7 +128,7 @@ const Editor = () => {
 
                             // HACK: to reload images in `UploadImageButton` after upload is finished
                             set(
-                              ref(getDatabase(), `docs/${params.docID}/images`),
+                              ref(getDatabase(), `docs/${params.docID}/images/${newImgName.key}`),
                               true
                             );
 

@@ -30,43 +30,50 @@ function hashchange() {
   const container = document.getElementById("markdown-content-container");
 
   if (target) {
+    const targetTop =
+      target.getBoundingClientRect().top + (container?.scrollTop || 0);
+    const containerTop = container?.getBoundingClientRect().top || 0;
     setTimeout(() => {
       container?.scroll({
         behavior: "smooth",
-        top: Math.max(0, target.offsetTop - 10),
+        top: Math.max(0, targetTop - containerTop - 10),
       });
     }, 0);
   }
 }
 
 function MarkdownPreview({ docContent, ...props }: any) {
+  const handleSameHashClicked = (event: Event) => {
+    if (
+      event.target &&
+      event.target instanceof HTMLAnchorElement &&
+      event.target.href === window.location.href &&
+      window.location.hash.length > 1
+    ) {
+      setTimeout(() => {
+        if (!event.defaultPrevented) {
+          hashchange();
+        }
+      });
+    }
+  };
+
   useEffect(() => {
     // Page load (you could wrap this in a DOM ready if the script is loaded early).
-    hashchange();
+    window.addEventListener("load", hashchange);
 
     // When URL changes.
     window.addEventListener("hashchange", hashchange);
 
     // When on the URL already, perhaps after scrolling, and clicking again, which
     // doesn’t emit `hashchange`.
-    document.addEventListener(
-      "click",
-      (event) => {
-        if (
-          event.target &&
-          event.target instanceof HTMLAnchorElement &&
-          event.target.href === window.location.href &&
-          window.location.hash.length > 1
-        ) {
-          setTimeout(() => {
-            if (!event.defaultPrevented) {
-              hashchange();
-            }
-          });
-        }
-      },
-      false
-    );
+    document.addEventListener("click", handleSameHashClicked, false);
+
+    return () => {
+      window.removeEventListener("load", hashchange);
+      window.removeEventListener("hashchange", hashchange);
+      document.removeEventListener("click", handleSameHashClicked, false);
+    };
   }, []);
 
   return (
