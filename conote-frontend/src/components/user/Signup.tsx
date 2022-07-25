@@ -26,6 +26,7 @@ function SignupForm(props: any) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const isError = confirmPassword.length > 0 && password !== confirmPassword;
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <>
@@ -88,14 +89,22 @@ function SignupForm(props: any) {
         </FormControl>
 
         <Button
-          onClick={() =>
-            password === confirmPassword ?
-              props.onButtonClick(email, password, { fullname: fullname })
-              : toast({
+          isLoading={isLoading}
+          onClick={() => {
+            if (password !== confirmPassword) {
+              toast({
                 title: "Password confirmation doesn't match",
                 status: "error",
                 isClosable: true,
-              })
+              });
+              return;
+            }
+            setIsLoading(true);
+            props.onButtonClick(email, password, { fullname: fullname })
+              .finally(() => {
+                setIsLoading(false);
+              });
+          }
           }
           colorScheme="blue"
           boxShadow="base"
@@ -121,7 +130,7 @@ export default function Signup() {
         </Heading>
         <SignupForm
           onButtonClick={(email: string, password: string, props: any) => {
-            authentication
+            return authentication
               .signup(email, password, props)
               .then((response) => {
                 navigate("/dashboard");

@@ -21,6 +21,7 @@ import queryStringType from "components/interfaces/queryStringType";
 function LoginForm(props: any) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <VStack
@@ -50,7 +51,14 @@ function LoginForm(props: any) {
         />
       </FormControl>
       <Button
-        onClick={() => props.onButtonClick(email, password)}
+        isLoading={isLoading}
+        onClick={() => {
+          setIsLoading(true);
+          props.onButtonClick(email, password)
+            .finally(() => {
+              setIsLoading(false);
+            });
+        }}
         colorScheme="blue"
         boxShadow="base"
         padding="0px 1.5em"
@@ -79,7 +87,7 @@ export default function Login() {
           </Heading>
           <LoginForm
             onButtonClick={(email: string, password: string) => {
-              authentication
+              return authentication
                 .signin(email, password)
                 .then((response) => {
                   if (location.state) {
