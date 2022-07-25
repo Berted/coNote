@@ -165,6 +165,7 @@ export default function UploadImageDrawer({ docID, owner }: any) {
     const unsubscribe = onValue(
       ref(getDatabase(), `docs/${docID}/images`),
       (snapshot) => {
+        console.log(snapshot.val())
         let arr = [] as string[];
         snapshot.forEach((image) => {
           if (image.key) {
@@ -260,7 +261,7 @@ export default function UploadImageDrawer({ docID, owner }: any) {
                           });
                           const newImgName = push(
                             ref(getDatabase(), `docs/${docID}/images`),
-                            true
+                            false
                           );
                           const storageRef = storage.ref(
                             `docs/${docID}/images/${newImgName.key}`
@@ -272,7 +273,7 @@ export default function UploadImageDrawer({ docID, owner }: any) {
                           });
 
                           // HACK: to reload images in `UploadImageButton` after upload is finished
-                          set(ref(getDatabase(), `docs/${docID}/images`), true);
+                          set(ref(getDatabase(), `docs/${docID}/images/${newImgName.key}`), true);
 
                           let link = await storageRef.getDownloadURL();
                           setFile(undefined);
