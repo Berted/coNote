@@ -186,6 +186,7 @@ function EditUserButton() {
                             onChange={(e) => {
                               if (e.target.files) {
                                 setFile(e.target.files[0]);
+                                e.target.value = "";
                               }
                             }}
                           />
