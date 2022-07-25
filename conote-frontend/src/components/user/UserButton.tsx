@@ -63,7 +63,10 @@ function EditUserButton() {
   const toastRef = useRef<ToastId>();
   const avatarInvalid = file !== undefined && file.type.split("/")[0] !== "image";
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const resetValues = () => {
+    setIsLoading(false);
     setPass("");
     setAuthenticated(false);
     setFullname(auth.userData?.fullname);
@@ -228,7 +231,7 @@ function EditUserButton() {
             </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button onClick={onClose} mr="3">
+            <Button onClick={onClose} mr="3" isDisabled={isLoading}>
               Cancel
             </Button>
             {!authenticated ? (
@@ -280,6 +283,7 @@ function EditUserButton() {
               </Button>
             ) : (
               <Button
+                isLoading={isLoading}
                 colorScheme="blue"
                 onClick={() => {
                   if (password !== confirmPassword) {
@@ -299,11 +303,12 @@ function EditUserButton() {
                     return;
                   }
                   if (auth.user) {
+                    setIsLoading(true);
                     auth
                       .reauthenticateUser(auth.user, pass)
-                      .then((response) => {
+                      .then(async (response) => {
                         if (auth.user) {
-                          auth
+                          await auth
                             .changePassword(auth.user, password)
                             .then(async (response) => {
                               set(
@@ -398,6 +403,9 @@ function EditUserButton() {
                           status: "error",
                           isClosable: true,
                         });
+                      })
+                      .finally(() => {
+                        setIsLoading(false);
                       });
                   }
                 }}

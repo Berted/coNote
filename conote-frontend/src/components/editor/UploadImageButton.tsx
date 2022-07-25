@@ -142,7 +142,7 @@ function DeleteImageButton({ docID, isOwner, imageObject, ...props }: any) {
   );
 }
 
-export default function SortFilterDrawer({ docID, owner }: any) {
+export default function UploadImageDrawer({ docID, owner }: any) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [images, setImages] = useState<[string, string][]>([]);
 
@@ -156,6 +156,8 @@ export default function SortFilterDrawer({ docID, owner }: any) {
 
   const isOwner = auth.user ? auth.user.uid === owner : false;
   const fileInvalid = file !== undefined && file.type.split("/")[0] !== "image";
+
+  const [isLoading, setIsLoading] = useState(false);
 
   // Subscribe to images bank
   useEffect(() => {
@@ -237,6 +239,7 @@ export default function SortFilterDrawer({ docID, owner }: any) {
                     h="1.75rem"
                     size="sm"
                     mr="1.5"
+                    isLoading={isLoading}
                     onClick={async () => {
                       if (file) {
                         if (fileInvalid) {
@@ -248,6 +251,7 @@ export default function SortFilterDrawer({ docID, owner }: any) {
                           return;
                         }
                         if (file && file.type.split("/")[0] === "image") {
+                          setIsLoading(true);
                           toastRef.current = toast({
                             title: "Uploading image...",
                             status: "loading",
@@ -274,6 +278,7 @@ export default function SortFilterDrawer({ docID, owner }: any) {
                           setFile(undefined);
                           if (toastRef.current) {
                             toast.close(toastRef.current);
+                            setIsLoading(false);
                           }
                         }
                       }
